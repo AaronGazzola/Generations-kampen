@@ -8,7 +8,7 @@ const Layout = (props: LayoutProps) => {
 	setScreenDimensions();
 	return (
 		<>
-			<main className='flex flex-col items-center relative '>
+			<main className='flex flex-col items-center relative'>
 				{props.children}
 			</main>
 		</>

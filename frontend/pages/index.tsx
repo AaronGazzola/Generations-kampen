@@ -1,18 +1,26 @@
 import type { NextPage } from 'next';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Meta from '../components/Meta';
-import { useAppSelector } from '../redux/hooks';
 
 const Home: NextPage = () => {
-	const { breakpoint, screenHeight, screenWidth } = useAppSelector(
-		state => state.utils
-	);
 	const [phase, setPhase] = useState<'standby' | 'play' | 'feedback'>(
 		'standby'
 	);
 	const [seconds, setSeconds] = useState(0);
-	const [videoWidth, setVideoWidth] = useState(640);
-	const answersRef = useRef<HTMLDivElement>(null);
+
+	const startTriviaTimer = () => {
+		let sec = 60;
+		setSeconds(sec);
+		const timer = setInterval(() => {
+			sec--;
+			setSeconds(sec);
+			if (sec === 0) {
+				console.log(sec);
+				clearInterval(timer);
+				setPhase('feedback');
+			}
+		}, 1000);
+	};
 
 	const playHandler = () => {
 		let sec = 3;
@@ -23,15 +31,10 @@ const Home: NextPage = () => {
 			if (sec === 0) {
 				clearInterval(timer);
 				setPhase('play');
+				startTriviaTimer();
 			}
 		}, 1000);
 	};
-
-	useEffect(() => {
-		if (answersRef.current?.offsetHeight) {
-			setVideoWidth(screenHeight - answersRef.current?.offsetHeight);
-		}
-	}, [breakpoint, screenHeight, screenWidth, answersRef, phase]);
 
 	return (
 		<>
@@ -44,27 +47,49 @@ const Home: NextPage = () => {
 					{seconds === 0 ? 'Play' : seconds}
 				</button>
 			) : (
-				<>
-					<div className={`w-full max-w-lg flex flex-col items-center`}>
+				<div className='absolute top-0 left-0 w-full h-screen flex flex-col justify-between p-2'>
+					<div>
 						<div
-							className='bg-gray-400 relative max-w-lg max-h-lg'
-							style={{ width: videoWidth, height: videoWidth }}
+							className='w-full bg-gray-400 max-h-lg p-2 max-w-lg'
+							style={{ paddingTop: '100%' }}
 						></div>
-						<div ref={answersRef} className='flex flex-col'>
-							<p className='text-center py-2'>
-								Select the right answer before the time runs out!
+						<div
+							className='w-full my-2 relative  border-2  h-8 rounded-full flex-shrink-0 overflow-hidden'
+							style={{ animation: 'timerBorderColor 60s forwards' }}
+						>
+							<div
+								className='w-full h-full absolute top-0 left-0 origin-left transition-scale ease-linear duration-1000 overflow-hidden'
+								style={{
+									transform: `scaleX(${seconds / 60})`,
+									animation: 'timerBackgroundColor 60s forwards'
+								}}
+							></div>
+
+							<p
+								className='absolute text-center top-1/2 transform -translate-y-1/2 left-0 w-full  font-semibold z-10'
+								style={{ mixBlendMode: 'difference' }}
+							>
+								{seconds} seconds to answer!
 							</p>
-							{[1, 2, 3, 4].map(answer => (
-								<button
-									key={answer}
-									className='bg-blue-500 text-white text-semibold hover:bg-green-500 w-full mb-2 py-1'
-								>
-									Answer{answer}
-								</button>
-							))}
 						</div>
 					</div>
-				</>
+					<div
+						className='flex flex-col max-w-lg w-full overflow-y-auto'
+						style={{
+							maxHeight: 'calc((var(--vh) * 100) - 100vw)',
+							minHeight: 100
+						}}
+					>
+						{[1, 2, 3, 4].map(answer => (
+							<button
+								key={answer}
+								className='bg-blue-500 text-white text-semibold hover:bg-green-500 w-full mb-2 py-1 max-w-lg '
+							>
+								Answer {answer}
+							</button>
+						))}
+					</div>
+				</div>
 			)}
 		</>
 	);

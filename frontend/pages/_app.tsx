@@ -3,6 +3,7 @@ import { store } from '../redux/store';
 import { Provider } from 'react-redux';
 import Layout from '../components/Layout';
 import '../styles/globals.css';
+import '../styles/animations.css';
 
 declare global {
 	interface Document {
