@@ -10,7 +10,7 @@ class MyDocument extends Document {
 					<link rel='apple-touch-icon' href='/apple-touch-icon.png' />
 					<link rel='manifest' href='/manifest.json' />
 				</Head>
-				<body className='bg-background'>
+				<body className='bg-gray-100'>
 					<Main />
 					<NextScript />
 				</body>

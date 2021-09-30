@@ -7,8 +7,7 @@ import { useAppSelector } from '../redux/hooks';
 const Home: NextPage = () => {
 	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
 	const [playButtonStyle, setPlayButtonStyle] = useState({
-		height: 100,
-		width: 300,
+		width: 200,
 		color: 'green'
 	});
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -17,6 +16,7 @@ const Home: NextPage = () => {
 		'standby' | 'play' | 'feedback' | 'countdown'
 	>('standby');
 	const [seconds, setSeconds] = useState(0);
+	const playButtonWidth = 200;
 
 	useEffect(() => {
 		if (phase !== 'play' || !canvasRef.current) return;
@@ -145,62 +145,67 @@ const Home: NextPage = () => {
 			}
 		}, 1000);
 	};
-
 	return (
 		<>
 			<Meta />
 			<Keyframes
 				from={{
-					transform: `scale(${playButtonStyle.width / screenWidth}, ${
-						playButtonStyle.height / screenHeight
-					})`,
-					borderRadius: 100
+					transform: `scale(1)`
 				}}
-				to={{ transform: 'scale(1.2,1.2)', borderRadius: 9999999 }}
+				to={{ transform: 'scale(10)' }}
 				name='playButtonExpand'
 			/>
 			{/* Play button */}
-			<div
-				className={`fixed top-0 left-0 w-screen origin-center bg-${
-					playButtonStyle.color
-				} ${
-					['standby', 'countdown'].includes(phase) ? '' : 'hidden'
-				} cursor-pointer`}
+			{/* <div
+				className={`fixed top-0 left-0 origin-center w-10 h-10 rounded-full bg-${
+					phase === 'countdown'
+						? 'green'
+						: `${playButtonStyle.color} cursor-pointer`
+				} ${['standby', 'countdown'].includes(phase) ? '' : 'hidden'}`}
 				style={{
-					height: 'calc(var(--vh) * 100)',
-					transform: `scale(${playButtonStyle.width / screenWidth}, ${
-						playButtonStyle.height / screenHeight
-					})`,
-					borderRadius: 100,
 					animation:
 						phase === 'countdown'
 							? 'playButtonExpand .5s cubic-bezier( 0.87, -0.1, 0.98, 0.06 )  forwards'
 							: ''
 				}}
-			></div>
-			<button
-				className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-semibold text-4xl ${
-					['standby', 'countdown'].includes(phase) ? '' : 'hidden'
-				}`}
-				onMouseOver={() =>
-					setPlayButtonStyle(prev => ({ ...prev, color: 'green-light' }))
-				}
-				onMouseOut={() =>
-					setPlayButtonStyle(prev => ({ ...prev, color: 'green' }))
-				}
-				onMouseUp={playHandler}
+			></div> */}
+			<div
+				className='flex items-center justify-center fixed top-0 left-0 right-0 bottom-0'
 				style={{
-					width: playButtonStyle.width,
-					height: playButtonStyle.height,
-					transform:
-						phase === 'countdown' ? `scale(6) translate(-8%, -8%)` : '',
-					opacity: phase === 'countdown' ? 0 : 1,
-					transition: 'all .5s cubic-bezier( 0.87, -0.1, 0.98, 0.06 )'
+					display: ['countdown', 'standby'].includes(phase) ? 'flex' : 'none'
 				}}
-				onClick={playHandler}
 			>
-				Play
-			</button>
+				<button
+					className={`text-white font-semibold text-4xl bg-green ${
+						phase === 'standby' ? 'hover:bg-green-light' : ''
+					} origin-center ${
+						['standby', 'countdown'].includes(phase) ? '' : 'hidden'
+					}`}
+					onMouseOver={() =>
+						setPlayButtonStyle(prev => ({ ...prev, color: 'green-light' }))
+					}
+					onMouseOut={() =>
+						setPlayButtonStyle(prev => ({ ...prev, color: 'green' }))
+					}
+					onMouseUp={playHandler}
+					style={{
+						width: playButtonWidth,
+						height: playButtonWidth,
+						borderRadius: '50%',
+						transform: phase === 'countdown' ? `scale(15)` : '',
+						transition: 'all 1s cubic-bezier( 0.85, -0.1, 0.66, 0.68 )'
+					}}
+					onClick={playHandler}
+				>
+					<span
+						className={`transition-opacity ease-in duration-500 ${
+							phase !== 'standby' ? 'opacity-0' : ''
+						}`}
+					>
+						Play
+					</span>
+				</button>
+			</div>
 			{/* Countdown */}
 			<p
 				className={`fixed top-1/2 left-1/2 text-7xl text-white ${
@@ -215,6 +220,9 @@ const Home: NextPage = () => {
 			>
 				{seconds}
 			</p>
+
+			{/* timer seconds */}
+			<p>{seconds}</p>
 
 			{/* Liquid timer */}
 			<canvas
