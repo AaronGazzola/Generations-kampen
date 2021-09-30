@@ -1,22 +1,23 @@
-@keyframes timerBackgroundColor {
+@keyframes countdown {
 	0% {
-		background-color: #10b981;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0);
 	}
 	50% {
-		background-color: #f59e0b;
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
 	}
 	100% {
-		background-color: #ef4444;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(6);
 	}
 }
-@keyframes timerBorderColor {
+
+@keyframes drain {
 	0% {
-		border-color: #10b981;
-	}
-	50% {
-		border-color: #f59e0b;
+		transform: translateY(-50px);
 	}
 	100% {
-		border-color: #ef4444;
+		transform: translateY(100%);
 	}
 }
