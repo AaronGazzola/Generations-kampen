@@ -1,121 +1,41 @@
 import type { NextPage } from 'next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Keyframes } from '../components/Keyframes';
 import Meta from '../components/Meta';
 import { useAppSelector } from '../redux/hooks';
 
+interface Bubble {
+	width: number;
+	delay: number;
+	duration: number;
+	x: number;
+	key: number;
+}
+
 const Home: NextPage = () => {
-	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
-	const [playButtonStyle, setPlayButtonStyle] = useState({
-		width: 200,
-		color: 'green'
-	});
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const canvasCtxRef = React.useRef<CanvasRenderingContext2D | null>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'play' | 'feedback' | 'countdown'
 	>('standby');
 	const [seconds, setSeconds] = useState(0);
-	const playButtonWidth = 200;
+	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
+	const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
-	useEffect(() => {
-		if (phase !== 'play' || !canvasRef.current) return;
-		canvasCtxRef.current = canvasRef.current.getContext('2d');
-		let aniId;
-		canvasRef.current.width = screenWidth;
-		canvasRef.current.height = screenHeight + 100;
-		let w = screenWidth,
-			h = screenHeight,
-			particles: { x: number; y: number; d: number; respawn: () => void }[] =
-				[],
-			fill = true,
-			color = '#63BD61',
-			c: number,
-			level = 100;
-
-		interface Particle {
-			x: number;
-			y: number;
-			d: number;
-			respawn?: () => void;
+	const getBubbles = (density: number) => {
+		let arr: Bubble[] = [];
+		const getRandomInteger = (min: number, max: number) => {
+			return Math.floor(Math.random() * (max - min + 1) + min);
+		};
+		for (let i = 0; i < screenWidth / density; i++) {
+			arr.push({
+				width: getRandomInteger(2, 10),
+				delay: getRandomInteger(0, 5),
+				duration: getRandomInteger(5, 15),
+				x: getRandomInteger(0, screenWidth),
+				key: i
+			});
 		}
-
-		function particle(this: Particle, x: number, y: number, d: number) {
-			this.x = x;
-			this.y = y;
-			this.d = d;
-			this.respawn = function () {
-				this.x = Math.random() * (w * 0.8) + 0.1 * w;
-				this.y = Math.random() * 30 + h - ((h - 100) * level) / 100 - 50 + 50;
-				this.d = Math.random() * 5 + 5;
-			};
-		}
-
-		const init = () => {
-			c = 0;
-			particles = [];
-			particles = [];
-			for (var i = 0; i < 40; i++) {
-				var obj = new (particle as any)(0, 0, 0);
-				obj.respawn();
-				particles.push(obj);
-			}
-			aniId = window.requestAnimationFrame(draw);
-		};
-
-		const draw = () => {
-			if (!canvasCtxRef.current) return;
-			canvasCtxRef.current.clearRect(0, 0, w, h);
-			canvasCtxRef.current.fillStyle = color;
-			canvasCtxRef.current.strokeStyle = color;
-
-			//draw the liquid
-			canvasCtxRef.current.beginPath();
-			canvasCtxRef.current.moveTo(w, h - ((h - 100) * level) / 100 - 50);
-			canvasCtxRef.current.lineTo(w, h);
-			canvasCtxRef.current.lineTo(0, h);
-			canvasCtxRef.current.lineTo(0, h - ((h - 100) * level) / 100 - 50);
-			var temp = 50 * Math.sin((c * 1) / 50);
-			canvasCtxRef.current.bezierCurveTo(
-				w / 3,
-				h - ((h - 100) * level) / 100 - 50 - temp,
-				(2 * w) / 3,
-				h - ((h - 100) * level) / 100 - 50 + temp,
-				w,
-				h - ((h - 100) * level) / 100 - 50
-			);
-			canvasCtxRef.current.fill();
-
-			//draw the bubbles
-			for (var i = 0; i < 40; i++) {
-				canvasCtxRef.current.beginPath();
-				canvasCtxRef.current.arc(
-					particles[i].x,
-					particles[i].y,
-					particles[i].d,
-					0,
-					2 * Math.PI
-				);
-				if (fill) canvasCtxRef.current.fill();
-				else canvasCtxRef.current.stroke();
-			}
-
-			update();
-			aniId = window.requestAnimationFrame(draw);
-		};
-
-		const update = () => {
-			c++;
-			if (100 * Math.PI <= c) c = 0;
-			for (var i = 0; i < 40; i++) {
-				particles[i].x = particles[i].x + Math.random() * 2 - 1;
-				particles[i].y = particles[i].y - 1;
-				particles[i].d = particles[i].d - 0.04;
-				if (particles[i].d <= 0) particles[i].respawn();
-			}
-		};
-		if (seconds === 60) init();
-	}, [seconds, phase]);
+		return arr;
+	};
 
 	const startTriviaTimer = () => {
 		setPhase('play');
@@ -125,7 +45,6 @@ const Home: NextPage = () => {
 			sec--;
 			setSeconds(sec);
 			if (sec === 0) {
-				console.log(sec);
 				clearInterval(timer);
 				setPhase('feedback');
 			}
@@ -134,7 +53,8 @@ const Home: NextPage = () => {
 
 	const playHandler = () => {
 		setPhase('countdown');
-		let sec = 4;
+		setBubbles(getBubbles(30));
+		let sec = 6;
 		setSeconds(sec);
 		const timer = setInterval(() => {
 			sec--;
@@ -148,145 +68,171 @@ const Home: NextPage = () => {
 	return (
 		<>
 			<Meta />
-			<Keyframes
-				from={{
-					transform: `scale(1)`
-				}}
-				to={{ transform: 'scale(10)' }}
-				name='playButtonExpand'
-			/>
-			{/* Play button */}
-			{/* <div
-				className={`fixed top-0 left-0 origin-center w-10 h-10 rounded-full bg-${
-					phase === 'countdown'
-						? 'green'
-						: `${playButtonStyle.color} cursor-pointer`
-				} ${['standby', 'countdown'].includes(phase) ? '' : 'hidden'}`}
-				style={{
-					animation:
-						phase === 'countdown'
-							? 'playButtonExpand .5s cubic-bezier( 0.87, -0.1, 0.98, 0.06 )  forwards'
-							: ''
-				}}
-			></div> */}
 			<div
-				className='flex items-center justify-center fixed top-0 left-0 right-0 bottom-0'
-				style={{
-					display: ['countdown', 'standby'].includes(phase) ? 'flex' : 'none'
-				}}
+				className='relative z-10 overflow-visible'
+				style={{ minWidth: 320, minHeight: 540 }}
 			>
-				<button
-					className={`text-white font-semibold text-4xl bg-green ${
-						phase === 'standby' ? 'hover:bg-green-light' : ''
-					} origin-center ${
-						['standby', 'countdown'].includes(phase) ? '' : 'hidden'
-					}`}
-					onMouseOver={() =>
-						setPlayButtonStyle(prev => ({ ...prev, color: 'green-light' }))
-					}
-					onMouseOut={() =>
-						setPlayButtonStyle(prev => ({ ...prev, color: 'green' }))
-					}
-					onMouseUp={playHandler}
+				<div
+					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-around overflow-hidden'
 					style={{
-						width: playButtonWidth,
-						height: playButtonWidth,
-						borderRadius: '50%',
-						transform: phase === 'countdown' ? `scale(15)` : '',
-						transition: 'all 1s cubic-bezier( 0.85, -0.1, 0.66, 0.68 )'
+						transform:
+							phase === 'standby' ? 'translateX(0%)' : 'translateX(-100%)',
+						opacity: phase === 'standby' ? 1 : 0,
+						transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
 					}}
-					onClick={playHandler}
 				>
-					<span
-						className={`transition-opacity ease-in duration-500 ${
-							phase !== 'standby' ? 'opacity-0' : ''
-						}`}
+					<h1
+						className='text-yellow-dark font-bold'
+						style={{ fontSize: '2.7rem' }}
 					>
-						Play
-					</span>
-				</button>
+						UTMANINGEN
+					</h1>
+					<div className='w-60 h-64 bg-gray-200 rounded-lg flex items-center justify-center bg-opacity-60'>
+						<p className='text-brown font-semibold text-lg'>[Image]</p>
+					</div>
+					<button
+						onClick={playHandler}
+						className='rounded-md w-72 h-20 bg-brown-dark text-yellow-dark text-5xl font-bold pb-1.5'
+					>
+						STARTA
+					</button>
+				</div>
+				<div
+					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-around overflow-hidden'
+					style={{
+						transform:
+							phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
+						opacity: phase !== 'standby' ? 1 : 0,
+						transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
+					}}
+				>
+					<h1
+						className='whitespace-nowrap text-white font-bold italic'
+						style={{ fontSize: '1.2rem' }}
+					>
+						Vilket foretag ar det reklam for?
+					</h1>
+					<div
+						className='bg-gray-800 rounded-lg flex items-center justify-center mb-2'
+						style={{ width: 280, height: 280 }}
+					>
+						{phase === 'countdown' && seconds > 0 && seconds < 4 ? (
+							<p
+								className='text-white text-2xl font-bold'
+								style={{ animation: 'countdown 1s ease infinite' }}
+							>
+								{seconds}
+							</p>
+						) : phase !== 'countdown' ? (
+							<p className='text-white font-semibold text-lg'>
+								[ Video: {seconds} ]
+							</p>
+						) : (
+							<></>
+						)}
+					</div>
+					{['blue', 'red', 'green', 'yellow'].map(color => (
+						<button
+							key={color}
+							onClick={() => setPhase('feedback')}
+							className={`h-12 w-full mb-1 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
+								phase === 'countdown' ? 'opacity-20' : ``
+							}`}
+							style={{
+								borderRadius: 20,
+								maxWidth: 285
+							}}
+						>
+							{phase === 'countdown' ? '' : color}
+						</button>
+					))}
+				</div>
 			</div>
-			{/* Countdown */}
-			<p
-				className={`fixed top-1/2 left-1/2 text-7xl text-white ${
-					phase === 'countdown' && seconds !== 4 ? '' : 'hidden'
-				}`}
+			<div
+				className='fixed top-0 left-0 right-0 bottom-0'
 				style={{
-					animation:
-						phase === 'countdown' && [1, 2, 3].includes(seconds)
-							? 'countdown 1s ease infinite'
-							: ''
+					transform:
+						phase === 'countdown' ? 'translateY(0%)' : 'translateY(100%)',
+					transition:
+						phase === 'countdown'
+							? 'transform 1.5s ease 0.8s'
+							: 'transform 60s linear',
+					backfaceVisibility: 'hidden'
 				}}
 			>
-				{seconds}
-			</p>
-
-			{/* timer seconds */}
-			<p>{seconds}</p>
-
-			{/* Liquid timer */}
-			<canvas
-				className={`fixed top-0 left-0 ${phase === 'play' ? '' : 'hidden'}`}
-				ref={canvasRef}
-				style={{
-					animation: 'drain 60s linear forwards'
-				}}
-			></canvas>
-			<div
-				className={`w-screen h-screen bg-green fixed top-full left-0 transform -translate-y-14 ${
-					phase === 'play' && seconds > 50 ? '' : 'hidden'
-				}`}
-			></div>
-
-			{/* <div className={`fixed top-0 left-0 w-screen ${phase === 'play' ? '' : 'hidden'}`} style={{height:'calc((var(--vh) * 100)'}}></div> */}
-
-			{/* {phase === 'standby' ? (
-				<></>
-			) : (
-				<div className='absolute top-0 left-0 w-full h-screen flex flex-col justify-between p-2'>
-					<div>
+				<svg
+					className='waves absolute top-0 left-0 right-0'
+					xmlns='http://www.w3.org/2000/svg'
+					xmlnsXlink='http://www.w3.org/1999/xlink'
+					viewBox='0 24 150 28'
+					preserveAspectRatio='none'
+					shapeRendering='auto'
+					style={{ backfaceVisibility: 'hidden' }}
+				>
+					<defs>
+						<path
+							id='gentle-wave'
+							d='M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z'
+						/>
+					</defs>
+					<g className='parallax'>
+						<use
+							xlinkHref='#gentle-wave'
+							x='48'
+							y='0'
+							style={{ fill: '#4ca9b1', opacity: 0.2 }}
+						/>
+						<use
+							xlinkHref='#gentle-wave'
+							x='48'
+							y='3'
+							style={{ fill: '#4ca9b1', opacity: 0.3 }}
+						/>
+					</g>
+				</svg>
+				<svg
+					className='waves absolute left-0 right-0'
+					xmlns='http://www.w3.org/2000/svg'
+					xmlnsXlink='http://www.w3.org/1999/xlink'
+					viewBox='0 24 150 28'
+					preserveAspectRatio='none'
+					shapeRendering='auto'
+					style={{ backfaceVisibility: 'hidden', top: 2 }}
+				>
+					<defs>
+						<path
+							id='gentle-wave'
+							d='M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z'
+						/>
+					</defs>
+					<g className='parallax'>
+						<use
+							xlinkHref='#gentle-wave'
+							x='48'
+							y='5'
+							style={{ fill: '#4ca9b1', opacity: 0.05 }}
+						/>
+					</g>
+				</svg>
+				<div
+					className='absolute h-full w-full bg-blue-light  overflow-visible z-10 opacity-50 '
+					style={{ top: 40, backfaceVisibility: 'hidden' }}
+				>
+					{bubbles.map(bubble => (
 						<div
-							className='w-full bg-gray-400 max-h-lg p-2 max-w-lg'
-							style={{ paddingTop: '100%' }}
+							key={bubble.key}
+							className={`absolute border border-white  w-${bubble.width} h-${bubble.width} rounded-full`}
+							style={{
+								left: bubble.x,
+								bottom: bubble.width,
+								animation: ['countdown', 'play'].includes(phase)
+									? `bubble ${bubble.duration}s linear ${bubble.delay}s infinite`
+									: ''
+							}}
 						></div>
-						<div
-							className='w-full my-2 relative  border-2  h-8 rounded-full flex-shrink-0 overflow-hidden'
-							style={{ animation: 'timerBorderColor 60s forwards' }}
-						>
-							<div
-								className='w-full h-full absolute top-0 left-0 origin-left transition-scale ease-linear duration-1000 overflow-hidden'
-								style={{
-									transform: `scaleX(${seconds / 60})`,
-									animation: 'timerBackgroundColor 60s forwards'
-								}}
-							></div>
-
-							<p
-								className='absolute text-center top-1/2 transform -translate-y-1/2 left-0 w-full  font-semibold z-10'
-								style={{ mixBlendMode: 'difference' }}
-							>
-								{seconds} seconds to answer!
-							</p>
-						</div>
-					</div>
-					<div
-						className='flex flex-col max-w-lg w-full overflow-y-auto'
-						style={{
-							maxHeight: 'calc((var(--vh) * 100) - 100vw)',
-							minHeight: 100
-						}}
-					>
-						{[1, 2, 3, 4].map(answer => (
-							<button
-								key={answer}
-								className='bg-blue-500 text-white text-semibold hover:bg-green-500 w-full mb-2 py-1 max-w-lg '
-							>
-								Answer {answer}
-							</button>
-						))}
-					</div>
+					))}
 				</div>
-			)} */}
+			</div>
 		</>
 	);
 };

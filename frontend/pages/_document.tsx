@@ -10,7 +10,12 @@ class MyDocument extends Document {
 					<link rel='apple-touch-icon' href='/apple-touch-icon.png' />
 					<link rel='manifest' href='/manifest.json' />
 				</Head>
-				<body className='bg-gray-100'>
+				<body
+					className='bg-gradient-to-r from-brown-lightest to-brown min-h-screen flex flex-col items-center justify-center'
+					style={{
+						backgroundAttachment: 'fixed'
+					}}
+				>
 					<Main />
 					<NextScript />
 				</body>

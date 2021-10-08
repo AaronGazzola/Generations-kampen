@@ -5,15 +5,35 @@ module.exports = {
 		extend: {
 			colors: {
 				green: {
-					dark: '#1b8433',
-					DEFAULT: '#63BD61',
+					darkest: '#1b8433',
+					dark: '#7ebb55',
+					DEFAULT: '#70b870',
 					light: '#72c371'
 				},
 				yellow: {
-					DEFAULT: '#ffc107'
+					light: '#fae94d',
+					DEFAULT: '#d7ae49',
+					dark: '#ffc107'
 				},
 				red: {
-					DEFAULT: '#dc3545'
+					light: '#ce3732',
+					dark: '#dc3545',
+					DEFAULT: '#b6504c'
+				},
+				blue: {
+					dark: '#627eaf',
+					DEFAULT: '#5680be',
+					light: '#4ca9b1',
+					lightest: '#9bc19b'
+				},
+				brown: {
+					lightest: '#b55b37',
+					light: '#8b4038',
+					DEFAULT: '#76402e',
+					dark: '#773529'
+				},
+				orange: {
+					DEFAULT: '#e06436'
 				}
 			}
 		}

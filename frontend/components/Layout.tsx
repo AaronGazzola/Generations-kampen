@@ -6,13 +6,7 @@ interface LayoutProps {
 
 const Layout = (props: LayoutProps) => {
 	setScreenDimensions();
-	return (
-		<>
-			<main className='flex flex-col items-center relative'>
-				{props.children}
-			</main>
-		</>
-	);
+	return <>{props.children}</>;
 };
 
 export default Layout;
