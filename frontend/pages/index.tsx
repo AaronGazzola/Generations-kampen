@@ -69,8 +69,8 @@ const Home: NextPage = () => {
 		<>
 			<Meta />
 			<div
-				className='relative z-10 overflow-visible'
-				style={{ minWidth: 320, minHeight: 540 }}
+				className='relative z-10 max-w-2xl w-screen border'
+				style={{ minWidth: 320, height: 'calc(var(--vh) * 100)' }}
 			>
 				<div
 					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-around overflow-hidden'
