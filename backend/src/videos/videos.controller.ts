@@ -4,7 +4,7 @@ import { VideosService } from './videos.service';
 @Controller('api/videos')
 export class VideosController {
   constructor(private videosService: VideosService) {}
-  @Get('/')
+  @Get('/:id')
   async getVideo(@Response() res) {
     return await this.videosService.getVideo(res);
   }

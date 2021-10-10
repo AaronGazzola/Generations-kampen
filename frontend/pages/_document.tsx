@@ -11,7 +11,7 @@ class MyDocument extends Document {
 					<link rel='manifest' href='/manifest.json' />
 				</Head>
 				<body
-					className='bg-gradient-to-r from-brown-lightest to-brown min-h-screen flex flex-col items-center justify-center'
+					className='bg-gradient-to-r from-brown-lightest to-brown min-h-screen flex flex-col items-center justify-start overflow-x-hidden'
 					style={{
 						backgroundAttachment: 'fixed'
 					}}

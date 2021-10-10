@@ -1,8 +1,9 @@
 import type { NextPage } from 'next';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Keyframes } from '../components/Keyframes';
 import Meta from '../components/Meta';
-import { useAppSelector } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { getVideo } from '../redux/trivia/trivia.slice';
 
 interface Bubble {
 	width: number;
@@ -13,6 +14,8 @@ interface Bubble {
 }
 
 const Home: NextPage = () => {
+	const dispatch = useAppDispatch();
+	const videoRef = useRef<HTMLVideoElement>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'play' | 'feedback' | 'countdown'
 	>('standby');
@@ -39,6 +42,7 @@ const Home: NextPage = () => {
 
 	const startTriviaTimer = () => {
 		setPhase('play');
+		videoRef?.current?.play();
 		let sec = 60;
 		setSeconds(sec);
 		const timer = setInterval(() => {
@@ -65,11 +69,12 @@ const Home: NextPage = () => {
 			}
 		}, 1000);
 	};
+
 	return (
 		<>
 			<Meta />
 			<div
-				className='relative z-10 max-w-2xl w-screen border'
+				className='relative z-10 max-w-2xl w-screen overflow-visible'
 				style={{ minWidth: 320, height: 'calc(var(--vh) * 100)' }}
 			>
 				<div
@@ -98,7 +103,7 @@ const Home: NextPage = () => {
 					</button>
 				</div>
 				<div
-					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-around overflow-hidden'
+					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-start overflow-hidden'
 					style={{
 						transform:
 							phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
@@ -112,24 +117,31 @@ const Home: NextPage = () => {
 					>
 						Vilket foretag ar det reklam for?
 					</h1>
-					<div
-						className='bg-gray-800 rounded-lg flex items-center justify-center mb-2'
-						style={{ width: 280, height: 280 }}
-					>
-						{phase === 'countdown' && seconds > 0 && seconds < 4 ? (
-							<p
-								className='text-white text-2xl font-bold'
-								style={{ animation: 'countdown 1s ease infinite' }}
-							>
-								{seconds}
-							</p>
-						) : phase !== 'countdown' ? (
-							<p className='text-white font-semibold text-lg'>
-								[ Video: {seconds} ]
-							</p>
-						) : (
-							<></>
+					<div className='p-2 relative'>
+						{phase === 'countdown' && (
+							<div className='absolute top-0 left-0 bottom-0 right-0 z-10 p-2'>
+								<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
+									<p
+										className='text-white text-2xl font-bold'
+										style={{ animation: 'countdown 1s ease infinite' }}
+									>
+										{seconds < 4 ? seconds : ''}
+									</p>
+								</div>
+							</div>
 						)}
+						<video
+							ref={videoRef}
+							muted
+							className='w-full rounded-lg'
+							loop
+							preload='auto'
+						>
+							<source
+								src='http://localhost:5000/api/videos/video1'
+								type='video/mp4'
+							/>
+						</video>
 					</div>
 					{['blue', 'red', 'green', 'yellow'].map(color => (
 						<button
