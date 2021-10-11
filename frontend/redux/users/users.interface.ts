@@ -11,10 +11,7 @@ export interface UsersState {
 	isAuth: boolean;
 	token?: string;
 	loading: boolean;
-	success?: {
-		title?: string;
-		message: string;
-	};
+	success?: string;
 	error?: {
 		title?: string;
 		message: string;
