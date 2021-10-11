@@ -57,7 +57,7 @@ const Index = () => {
 				style={{ background: 'rgba(255,255,255,0.7)' }}
 				onSubmit={submitHandler}
 			>
-				<h1 className='font-medium text-lg mb-2'>Log in</h1>
+				<h1 className='font-medium text-lg mb-2'>Reset password</h1>
 				<label
 					htmlFor='password'
 					className={`w-full pl-1 text-sm font-medium ${

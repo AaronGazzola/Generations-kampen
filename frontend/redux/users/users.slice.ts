@@ -19,7 +19,7 @@ export const login = createAsyncThunk(
 	async (loginData: LoginData, { rejectWithValue, getState }) => {
 		try {
 			const { data } = await axios.post(
-				`${baseUrl}/api/users`,
+				`${baseUrl}/api/auth/login`,
 				loginData,
 				config
 			);
@@ -85,7 +85,13 @@ const initialState: UsersState = {
 const usersSlice = createSlice({
 	name: 'users',
 	initialState,
-	reducers: {},
+	reducers: {
+		clearUserFeedback(state) {
+			state.success = '';
+			state.error = '';
+			state.alert = '';
+		}
+	},
 	extraReducers: builder => {
 		builder.addCase(login.pending, (state, action) => {
 			state.loading = true;
@@ -98,7 +104,7 @@ const usersSlice = createSlice({
 			state.success = 'Welcome!';
 		});
 		builder.addCase(login.rejected, (state, action) => {
-			state.error = { message: action.payload as string };
+			state.error = action.payload as string;
 			state.loading = false;
 		});
 		builder.addCase(forgotPassword.pending, (state, action) => {
@@ -109,7 +115,7 @@ const usersSlice = createSlice({
 			state.success = 'Email sent';
 		});
 		builder.addCase(forgotPassword.rejected, (state, action) => {
-			state.error = { message: action.payload as string };
+			state.error = action.payload as string;
 			state.loading = false;
 		});
 		builder.addCase(resetPassword.pending, (state, action) => {
@@ -120,9 +126,11 @@ const usersSlice = createSlice({
 			state.success = 'Password reset';
 		});
 		builder.addCase(resetPassword.rejected, (state, action) => {
-			state.error = { message: action.payload as string };
+			state.error = action.payload as string;
 			state.loading = false;
 		});
 	}
 });
+
+export const { clearUserFeedback } = usersSlice.actions;
 export default usersSlice.reducer;

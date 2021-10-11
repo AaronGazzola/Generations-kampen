@@ -12,14 +12,8 @@ export interface UsersState {
 	token?: string;
 	loading: boolean;
 	success?: string;
-	error?: {
-		title?: string;
-		message: string;
-	};
-	alert?: {
-		title?: string;
-		message: string;
-	};
+	error?: string;
+	alert?: string;
 }
 
 export interface LoginData {

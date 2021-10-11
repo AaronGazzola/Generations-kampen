@@ -8,6 +8,7 @@ import { TriviaModule } from './trivia/trivia.module';
 import { UsersModule } from './users/users.module';
 import { CommandModule } from 'nestjs-command';
 import { SeedsModule } from './seeds/seeds.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SeedsModule } from './seeds/seeds.module';
     UsersModule,
     CommandModule,
     SeedsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

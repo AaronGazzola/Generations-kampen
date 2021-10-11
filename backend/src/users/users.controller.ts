@@ -7,7 +7,7 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+import { LocalAuthGuard } from '../auth/guards/local-auth.guard';
 
 @Controller('api/users')
 export class UsersController {
