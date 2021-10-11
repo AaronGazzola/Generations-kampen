@@ -1,9 +1,7 @@
 import type { NextPage } from 'next';
-import React, { useEffect, useRef, useState } from 'react';
-import { Keyframes } from '../components/Keyframes';
+import React, { useRef, useState } from 'react';
 import Meta from '../components/Meta';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { getVideo } from '../redux/trivia/trivia.slice';
 
 interface Bubble {
 	width: number;

@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import triviaReducer from './trivia/trivia.slice';
 import utilsReducer from './utils/utils.slice';
+import usersReducer from './users/users.slice';
 
 export const store = configureStore({
 	reducer: {
 		trivia: triviaReducer,
-		utils: utilsReducer
+		utils: utilsReducer,
+		users: usersReducer
 	}
 });
 

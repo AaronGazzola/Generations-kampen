@@ -1,6 +1,18 @@
-import { FocusEvent, FormEvent, SyntheticEvent, useState } from 'react';
+import { useRouter } from 'next/dist/client/router';
+import {
+	FocusEvent,
+	FormEvent,
+	SyntheticEvent,
+	useEffect,
+	useState
+} from 'react';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { login } from '../../redux/users/users.slice';
 
 const Login = () => {
+	const router = useRouter();
+	const dispatch = useAppDispatch();
+	const { isAuth, loading, error } = useAppSelector(state => state.users);
 	const [formState, setFormState] = useState({
 		email: {
 			value: '',
@@ -34,9 +46,22 @@ const Login = () => {
 	};
 	const submitHandler = (e: SyntheticEvent) => {
 		e.preventDefault();
+		if (!email.isValid || !password.isValid) return;
+		dispatch(
+			login({
+				username: email.value,
+				password: password.value
+			})
+		);
 	};
 
+	useEffect(() => {
+		if (isAuth) router.push('/admin');
+	}, [isAuth, router]);
+
 	const forgotPasswordHandler = (e: SyntheticEvent) => {};
+
+	console.log(error);
 	return (
 		<div className='p-2 h-screen'>
 			<form
@@ -61,7 +86,7 @@ const Login = () => {
 							? ' border-red-700'
 							: 'border-transparent'
 					}`}
-					style={{ background: 'rgba(255,255,255,0.6)' }}
+					style={{ background: 'rgba(255,255,255,0.7)' }}
 					value={email.value}
 					onChange={changeHandler}
 					onBlur={touchHandler}
@@ -83,7 +108,7 @@ const Login = () => {
 							? 'border-red-700'
 							: 'border-transparent'
 					}`}
-					style={{ background: 'rgba(255,255,255,0.6)' }}
+					style={{ background: 'rgba(255,255,255,0.7)' }}
 					value={password.value}
 					onChange={changeHandler}
 					onBlur={touchHandler}

@@ -1,4 +1,5 @@
 export interface Trivia {
+	_id: string;
 	question: string;
 	answers: {
 		a: string;
@@ -9,6 +10,8 @@ export interface Trivia {
 }
 
 export interface TriviaState {
+	trivia?: Trivia;
+	video?: string;
 	loading: boolean;
 	success?: {
 		title?: string;
@@ -22,6 +25,11 @@ export interface TriviaState {
 		title?: string;
 		message: string;
 	};
-	trivia?: Trivia;
-	video?: string;
+}
+
+export interface TriviaResponse {
+	data: {
+		success: boolean;
+		trivia: Trivia;
+	};
 }

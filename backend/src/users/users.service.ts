@@ -40,7 +40,10 @@ export class UsersService {
     return {
       user,
       success: true,
-      token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRE,
+      }),
     };
   }
 
@@ -55,7 +58,10 @@ export class UsersService {
       return {
         user,
         success: true,
-        token: this.jwtService.sign(payload),
+        token: this.jwtService.sign(payload, {
+          secret: process.env.JWT_SECRET,
+          expiresIn: process.env.JWT_EXPIRE,
+        }),
       };
     } catch (error) {
       throw new ErrorResponse(error.message, 500);
