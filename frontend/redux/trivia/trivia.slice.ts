@@ -171,6 +171,11 @@ const triviaSlice = createSlice({
 	reducers: {
 		clearTriviaTrigger(state) {
 			state.trigger = '';
+		},
+		clearTriviaFeedback(state) {
+			state.success = '';
+			state.error = '';
+			state.alert = '';
 		}
 	},
 	extraReducers: builder => {
@@ -237,5 +242,5 @@ const triviaSlice = createSlice({
 		});
 	}
 });
-export const { clearTriviaTrigger } = triviaSlice.actions;
+export const { clearTriviaTrigger, clearTriviaFeedback } = triviaSlice.actions;
 export default triviaSlice.reducer;

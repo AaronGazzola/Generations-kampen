@@ -129,7 +129,6 @@ const usersSlice = createSlice({
 		},
 		logout(state) {
 			state.isAuth = false;
-			state.noUser = false;
 			state.user = undefined;
 			localStorage.removeItem('userData');
 			state.token = '';
@@ -168,7 +167,7 @@ const usersSlice = createSlice({
 				state.isAuth = !!action.payload.token;
 				state.token = action.payload.token;
 			} else {
-				state.noUser = true;
+				state.user = 'noUser';
 			}
 		});
 		builder.addCase(getUser.rejected, (state, action) => {

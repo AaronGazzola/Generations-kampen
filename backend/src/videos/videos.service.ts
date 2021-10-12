@@ -23,7 +23,7 @@ export class VideosService {
 
   async uploadVideo(file: any) {
     if (!file || file.mimetype !== 'video/mp4')
-      throw new ErrorResponse('Please upload a PDF file', 401);
+      throw new ErrorResponse('Please upload an mp4 file', 401);
 
     const { id } = this.req.params;
 

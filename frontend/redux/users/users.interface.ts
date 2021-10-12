@@ -7,14 +7,13 @@ export interface User {
 }
 
 export interface UsersState {
-	user?: User;
+	user?: User | string;
 	isAuth: boolean;
 	token?: string;
 	loading: boolean;
 	success?: string;
 	error?: string;
 	alert?: string;
-	noUser?: boolean;
 }
 
 export interface LoginData {

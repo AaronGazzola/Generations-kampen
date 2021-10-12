@@ -18,12 +18,12 @@ import {
 	updateTrivia,
 	uploadVideo
 } from '../../redux/trivia/trivia.slice';
-import { logout } from '../../redux/users/users.slice';
+import { getUser, logout } from '../../redux/users/users.slice';
 
 const Admin = () => {
 	const router = useRouter();
 	const dispatch = useAppDispatch();
-	const { isAuth } = useAppSelector(state => state.users);
+	const { isAuth, user } = useAppSelector(state => state.users);
 	const { trivia, trigger, loading, allTrivia } = useAppSelector(
 		state => state.trivia
 	);
@@ -141,8 +141,9 @@ const Admin = () => {
 	};
 
 	useEffect(() => {
-		if (!isAuth) router.push('/login');
-	}, [isAuth]);
+		if (user === 'noUser') router.push('/login');
+		if (!user) dispatch(getUser());
+	}, [router, user, dispatch]);
 
 	useEffect(() => {
 		if (trigger === 'uploadVideo') {
@@ -162,8 +163,8 @@ const Admin = () => {
 	}, [trigger]);
 
 	useEffect(() => {
-		dispatch(getAllTrivia());
-	}, []);
+		if (isAuth) dispatch(getAllTrivia());
+	}, [isAuth, dispatch]);
 
 	useEffect(() => {
 		if (id) setShowVideo(true);
@@ -176,7 +177,7 @@ const Admin = () => {
 	return (
 		<>
 			<UserFeedback />
-			<div className='p-2 h-screen'>
+			<div className='p-2'>
 				<form
 					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'
 					style={{ background: 'rgba(255,255,255,0.7)' }}
@@ -274,7 +275,7 @@ const Admin = () => {
 					</button>
 				</form>
 				<div
-					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'
+					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center my-4'
 					style={{ background: 'rgba(255,255,255,0.7)' }}
 				>
 					<label htmlFor='search' className={`w-full pl-1 text-sm font-medium`}>
@@ -292,7 +293,7 @@ const Admin = () => {
 				{displayTrivia?.map(triv => (
 					<div
 						key={triv._id}
-						className='w-screen max-w-lg p-2 rounded-sm flex flex-col mt-2'
+						className='w-screen max-w-lg p-2 rounded-sm flex flex-col mb-4'
 						style={{ background: 'rgba(255,255,255,0.7)' }}
 					>
 						<p>
@@ -351,6 +352,7 @@ const Admin = () => {
 							<button
 								onClick={() => {
 									if (triv._id) dispatch(deleteTrivia(triv?._id));
+									if (triv._id === id) setFormState(initialState);
 								}}
 								className='w-full border border-red-700 mt-2 px-1.5 py-1 font-semibold rounded-md text-red-700'
 							>

@@ -64,6 +64,10 @@ export class TriviaService {
 
     await this.triviaModel.findByIdAndDelete(id);
 
+    fs.unlink(`${process.env.UPLOAD_PATH}/${id}.mp4`, (err) => {
+      if (err) throw new ErrorResponse('Problem with contract upload', 500);
+    });
+
     return {
       success: true,
     };
