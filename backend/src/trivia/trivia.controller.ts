@@ -2,8 +2,10 @@ import { TriviaService } from './trivia.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
+  Put,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -18,6 +20,18 @@ export class TriviaController {
   @Post('')
   addTrivia(@Body(ValidationPipe) triviaDto: TriviaDto) {
     return this.triviaService.addTrivia(triviaDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('')
+  updateTrivia(@Body(ValidationPipe) triviaDto: TriviaDto) {
+    return this.triviaService.updateTrivia(triviaDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/:id')
+  deleteTrivia() {
+    return this.triviaService.deleteTrivia();
   }
 
   @UseGuards(JwtAuthGuard)

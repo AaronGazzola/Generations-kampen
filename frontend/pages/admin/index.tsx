@@ -9,10 +9,13 @@ import React, {
 } from 'react';
 import UserFeedback from '../../components/UserFeedback';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { Trivia } from '../../redux/trivia/trivia.interface';
 import {
 	addTrivia,
 	clearTriviaTrigger,
+	deleteTrivia,
 	getAllTrivia,
+	updateTrivia,
 	uploadVideo
 } from '../../redux/trivia/trivia.slice';
 import { logout } from '../../redux/users/users.slice';
@@ -24,7 +27,10 @@ const Admin = () => {
 	const { trivia, trigger, loading, allTrivia } = useAppSelector(
 		state => state.trivia
 	);
-	const [videoUploaded, setVideoUploaded] = useState(false);
+	const [displayTrivia, setDisplayTrivia] = useState(allTrivia);
+	const [showVideo, setShowVideo] = useState(false);
+	const [confirmDeleteId, setConfirmDeleteId] = useState('');
+	const [searchValue, setSearchValue] = useState('');
 	const initialState: { [index: string]: any } = {
 		id: '',
 		video: null,
@@ -62,7 +68,7 @@ const Admin = () => {
 		answerC.isValid &&
 		answerD.isValid &&
 		question.isValid &&
-		video;
+		(id || video);
 
 	const changeHandler = (e: FormEvent<HTMLTextAreaElement>) => {
 		const id = e.currentTarget.id;
@@ -91,16 +97,45 @@ const Admin = () => {
 	const submitHandler = (e: SyntheticEvent) => {
 		e.preventDefault();
 		if (!formIsValid) return;
+		const formContent = {
+			question: question.value,
+			answerA: answerA.value,
+			answerB: answerB.value,
+			answerC: answerC.value,
+			answerD: answerD.value
+		};
 		if (id) {
+			dispatch(updateTrivia({ ...formContent, _id: id }));
 		} else {
-			dispatch(
-				addTrivia({
-					question: question.value,
-					answerA: answerA.value,
-					answerB: answerB.value,
-					answerC: answerC.value,
-					answerD: answerD.value
-				})
+			dispatch(addTrivia(formContent));
+		}
+	};
+
+	const editTriviaButtonHandler = (triv: Trivia) => {
+		let newFormState: { [index: string]: any } = { id: triv._id };
+		Object.keys(triv).forEach(key => {
+			if (['feedback', '_id', '__v'].includes(key)) return;
+			newFormState = {
+				...newFormState,
+				[key]: { isValid: true, isTouched: false, value: triv[key] }
+			};
+		});
+		setFormState(prev => ({ ...prev, ...newFormState }));
+	};
+
+	const searchHandler = (e: ChangeEvent<HTMLInputElement>) => {
+		const value = e.currentTarget.value;
+		setSearchValue(value);
+		if (allTrivia?.length) {
+			setDisplayTrivia(
+				allTrivia.filter(
+					triv =>
+						triv.question.includes(value) ||
+						triv.answerA.includes(value) ||
+						triv.answerB.includes(value) ||
+						triv.answerC.includes(value) ||
+						triv.answerD.includes(value)
+				)
 			);
 		}
 	};
@@ -113,15 +148,30 @@ const Admin = () => {
 		if (trigger === 'uploadVideo') {
 			setFormState(prev => ({ ...prev, id: trivia?._id }));
 			dispatch(clearTriviaTrigger());
-			if (trivia?._id) dispatch(uploadVideo({ video, id: trivia._id }));
+			dispatch(getAllTrivia());
+			if (trivia?._id && video)
+				dispatch(uploadVideo({ video, id: trivia._id }));
 		} else if (trigger === 'videoUploaded') {
-			setVideoUploaded(true);
+			dispatch(clearTriviaTrigger());
+			setShowVideo(false);
+		} else if (trigger === 'triviaDeleted') {
+			dispatch(clearTriviaTrigger());
+			dispatch(getAllTrivia());
+			setShowVideo(false);
 		}
 	}, [trigger]);
 
 	useEffect(() => {
 		dispatch(getAllTrivia());
 	}, []);
+
+	useEffect(() => {
+		if (id) setShowVideo(true);
+	}, [id, showVideo]);
+
+	useEffect(() => {
+		setDisplayTrivia(allTrivia);
+	}, [allTrivia]);
 
 	return (
 		<>
@@ -140,7 +190,7 @@ const Admin = () => {
 							<span className='font-semibold'>ID:</span> {id}
 						</p>
 					)}
-					{id && videoUploaded && (
+					{id && showVideo && (
 						<video className='w-full rounded-md' preload='auto' controls>
 							<source
 								src={`http://localhost:5000/api/videos/${id}`}
@@ -166,7 +216,12 @@ const Admin = () => {
 											: ''
 									}`}
 								>
-									{key[0].toLocaleUpperCase() + key.slice(1)}
+									{key.startsWith('answer')
+										? key[0].toLocaleUpperCase() +
+										  key.slice(1, 6) +
+										  ' ' +
+										  key.slice(-1)
+										: key[0].toLocaleUpperCase() + key.slice(1)}
 								</label>
 								<textarea
 									rows={2}
@@ -180,7 +235,14 @@ const Admin = () => {
 									value={formState[key].value}
 									onChange={changeHandler}
 									onBlur={touchHandler}
-									placeholder={key[0].toLocaleUpperCase() + key.slice(1)}
+									placeholder={
+										key.startsWith('answer')
+											? key[0].toLocaleUpperCase() +
+											  key.slice(1, 6) +
+											  ' ' +
+											  key.slice(-1)
+											: key[0].toLocaleUpperCase() + key.slice(1)
+									}
 								/>
 							</React.Fragment>
 						);
@@ -198,10 +260,7 @@ const Admin = () => {
 					</button>
 					<button
 						type='button'
-						onClick={() => {
-							setVideoUploaded(false);
-							setFormState(initialState);
-						}}
+						onClick={() => setFormState(initialState)}
 						className='mt-2 text-yellow-700 font-medium text-sm'
 					>
 						Clear form
@@ -214,7 +273,23 @@ const Admin = () => {
 						Log out
 					</button>
 				</form>
-				{allTrivia?.map(triv => (
+				<div
+					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'
+					style={{ background: 'rgba(255,255,255,0.7)' }}
+				>
+					<label htmlFor='search' className={`w-full pl-1 text-sm font-medium`}>
+						Search
+					</label>
+					<input
+						className={`w-full py-1.5 px-2 rounded-sm`}
+						type='text'
+						id='search'
+						onChange={searchHandler}
+						value={searchValue}
+						placeholder='Search'
+					/>
+				</div>
+				{displayTrivia?.map(triv => (
 					<div
 						key={triv._id}
 						className='w-screen max-w-lg p-2 rounded-sm flex flex-col mt-2'
@@ -256,14 +331,32 @@ const Admin = () => {
 						<div className='flex justify-around'>
 							<button
 								type='button'
+								onClick={() => {
+									setShowVideo(false);
+									editTriviaButtonHandler(triv);
+								}}
 								className='mt-2 text-yellow-700 font-medium'
 							>
 								Edit
 							</button>
-							<button type='button' className='mt-2 text-red-900 font-medium'>
+							<button
+								type='button'
+								className='mt-2 text-red-900 font-medium'
+								onClick={() => setConfirmDeleteId(triv._id || '')}
+							>
 								Delete
 							</button>
 						</div>
+						{confirmDeleteId === triv._id && (
+							<button
+								onClick={() => {
+									if (triv._id) dispatch(deleteTrivia(triv?._id));
+								}}
+								className='w-full border border-red-700 mt-2 px-1.5 py-1 font-semibold rounded-md text-red-700'
+							>
+								{loading ? '...' : 'Confirm delete?'}
+							</button>
+						)}
 					</div>
 				))}
 			</div>

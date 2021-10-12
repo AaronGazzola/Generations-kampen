@@ -42,6 +42,34 @@ export const addTrivia = createAsyncThunk(
 	}
 );
 
+export const updateTrivia = createAsyncThunk(
+	'trivia/update',
+	async (trivia: Trivia, { rejectWithValue, getState }) => {
+		const {
+			users: { token }
+		} = getState() as RootState;
+		try {
+			const { data }: TriviaResponse = await axios.put(
+				`${baseUrl}/api/trivia`,
+				trivia,
+				{
+					headers: {
+						...config.headers,
+						'Authorization': `Bearer ${token}`
+					}
+				}
+			);
+			return data;
+		} catch (error: any) {
+			return rejectWithValue(
+				error.response && error.response.data.message
+					? error.response.data.message
+					: error.message
+			);
+		}
+	}
+);
+
 export const uploadVideo = createAsyncThunk(
 	'video/upload',
 	async (
@@ -105,6 +133,34 @@ export const getAllTrivia = createAsyncThunk(
 	}
 );
 
+export const deleteTrivia = createAsyncThunk(
+	'trivia/delete',
+	async (id: string, { rejectWithValue, getState }) => {
+		const {
+			users: { token }
+		} = getState() as RootState;
+
+		try {
+			const { data }: TriviaResponse = await axios.delete(
+				`${baseUrl}/api/trivia/${id}`,
+				{
+					headers: {
+						...config.headers,
+						'Authorization': `Bearer ${token}`
+					}
+				}
+			);
+			return data;
+		} catch (error: any) {
+			return rejectWithValue(
+				error.response && error.response.data.message
+					? error.response.data.message
+					: error.message
+			);
+		}
+	}
+);
+
 const initialState: TriviaState = {
 	loading: false
 };
@@ -128,6 +184,31 @@ const triviaSlice = createSlice({
 			state.trigger = 'uploadVideo';
 		});
 		builder.addCase(addTrivia.rejected, (state, action) => {
+			state.error = action.payload as string;
+			state.loading = false;
+		});
+		builder.addCase(updateTrivia.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(updateTrivia.fulfilled, (state, action) => {
+			state.loading = false;
+			state.trivia = action.payload.trivia;
+			state.success = 'Trivia updated';
+			state.trigger = 'uploadVideo';
+		});
+		builder.addCase(updateTrivia.rejected, (state, action) => {
+			state.error = action.payload as string;
+			state.loading = false;
+		});
+		builder.addCase(deleteTrivia.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(deleteTrivia.fulfilled, (state, action) => {
+			state.loading = false;
+			state.success = 'Trivia deleted';
+			state.trigger = 'triviaDeleted';
+		});
+		builder.addCase(deleteTrivia.rejected, (state, action) => {
 			state.error = action.payload as string;
 			state.loading = false;
 		});

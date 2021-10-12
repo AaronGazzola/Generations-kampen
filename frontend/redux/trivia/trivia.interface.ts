@@ -1,4 +1,5 @@
 export interface Trivia {
+	[index: string]: any;
 	_id?: string;
 	question: string;
 	answerA: string;
