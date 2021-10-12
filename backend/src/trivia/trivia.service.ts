@@ -16,7 +16,8 @@ export class TriviaService {
   ) {}
 
   async addTrivia(triviaDto: TriviaDto) {
-    const { question, answerA, answerB, answerC, answerD } = triviaDto;
+    const { question, answerA, answerB, answerC, answerD, correctAnswer } =
+      triviaDto;
 
     // create trivia
     const trivia = await this.triviaModel.create({
@@ -25,6 +26,7 @@ export class TriviaService {
       answerB,
       answerC,
       answerD,
+      correctAnswer,
     });
 
     return {
@@ -34,7 +36,8 @@ export class TriviaService {
   }
 
   async updateTrivia(triviaDto: TriviaDto) {
-    const { question, answerA, answerB, answerC, answerD, _id } = triviaDto;
+    const { question, answerA, answerB, answerC, answerD, _id, correctAnswer } =
+      triviaDto;
 
     // create trivia
     const trivia = await this.triviaModel.findByIdAndUpdate(_id, {
@@ -43,6 +46,7 @@ export class TriviaService {
       answerB,
       answerC,
       answerD,
+      correctAnswer,
     });
 
     return {

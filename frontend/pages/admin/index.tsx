@@ -33,6 +33,7 @@ const Admin = () => {
 	const [searchValue, setSearchValue] = useState('');
 	const initialState: { [index: string]: any } = {
 		id: '',
+		correctAnswer: 'A',
 		video: null,
 		question: {
 			value: '',
@@ -61,7 +62,16 @@ const Admin = () => {
 		}
 	};
 	const [formState, setFormState] = useState(initialState);
-	const { id, video, question, answerA, answerB, answerC, answerD } = formState;
+	const {
+		id,
+		video,
+		question,
+		answerA,
+		answerB,
+		answerC,
+		answerD,
+		correctAnswer
+	} = formState;
 	const formIsValid =
 		answerA.isValid &&
 		answerB.isValid &&
@@ -70,14 +80,23 @@ const Admin = () => {
 		question.isValid &&
 		(id || video);
 
-	const changeHandler = (e: FormEvent<HTMLTextAreaElement>) => {
+	const changeHandler = (
+		e: FormEvent<HTMLTextAreaElement | HTMLInputElement>
+	) => {
 		const id = e.currentTarget.id;
 		const value = e.currentTarget.value;
 		const isValid = !!value;
-		setFormState(prev => ({
-			...prev,
-			[id]: { ...prev[id], isValid, value }
-		}));
+		if (id.includes('correct')) {
+			setFormState(prev => ({
+				...prev,
+				correctAnswer: id.slice(0, 1)
+			}));
+		} else {
+			setFormState(prev => ({
+				...prev,
+				[id]: { ...prev[id], isValid, value }
+			}));
+		}
 	};
 	const changeFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
 		setFormState(prev => ({ ...prev, video: e.target.files?.[0] }));
@@ -102,7 +121,8 @@ const Admin = () => {
 			answerA: answerA.value,
 			answerB: answerB.value,
 			answerC: answerC.value,
-			answerD: answerD.value
+			answerD: answerD.value,
+			correctAnswer
 		};
 		if (id) {
 			dispatch(updateTrivia({ ...formContent, _id: id }));
@@ -206,7 +226,7 @@ const Admin = () => {
 						onChange={changeFileHandler}
 					/>
 					{Object.keys(formState).map(key => {
-						if (key === 'id' || key === 'video') return;
+						if (['correctAnswer', 'id', 'video'].includes(key)) return;
 						return (
 							<React.Fragment key={key}>
 								<label
@@ -248,7 +268,27 @@ const Admin = () => {
 							</React.Fragment>
 						);
 					})}
-
+					<h2 className={`text-sm font-medium`}>Correct answer:</h2>
+					<div className='flex w-full justify-around items-center'>
+						{['A', 'B', 'C', 'D'].map(item => (
+							<div className='flex cursor-pointer items-center mt-1' key={item}>
+								<input
+									type='radio'
+									id={`${item}correct`}
+									name='correct-answer'
+									className='cursor-pointer'
+									onChange={changeHandler}
+									checked={correctAnswer === item}
+								/>
+								<label
+									className={`text-sm font-medium p-1 cursor-pointer`}
+									htmlFor={`${item}correct`}
+								>
+									{item}
+								</label>
+							</div>
+						))}
+					</div>
 					<button
 						type='submit'
 						className={`w-full rounded-sm mt-4 font-semibold text-xl p-2 pt-1.5 ${
@@ -319,6 +359,10 @@ const Admin = () => {
 						<p>
 							<span className='font-semibold'>Answer D: </span>
 							{triv.answerD}
+						</p>
+						<p>
+							<span className='font-semibold'>Correct Answer: </span>
+							{triv.correctAnswer}
 						</p>
 						{triv.feedback && (
 							<p>

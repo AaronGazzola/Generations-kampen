@@ -17,4 +17,7 @@ export class TriviaDto {
 
   @IsString()
   answerD: string;
+
+  @IsString()
+  correctAnswer: string;
 }

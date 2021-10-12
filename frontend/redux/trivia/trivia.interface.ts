@@ -6,6 +6,7 @@ export interface Trivia {
 	answerB: string;
 	answerC: string;
 	answerD: string;
+	correctAnswer: string;
 	feedback?: {
 		positive: number;
 		negative: number;
