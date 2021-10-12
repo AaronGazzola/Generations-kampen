@@ -13,12 +13,6 @@ import { LocalAuthGuard } from '../auth/guards/local-auth.guard';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(LocalAuthGuard)
-  @Post('')
-  async login(@Request() req) {
-    return this.usersService.login(req.user);
-  }
-
   @Post('forgot-password')
   async forgotPassword(@Body() { email }: { email: string }) {
     return await this.usersService.forgotPassword(email);

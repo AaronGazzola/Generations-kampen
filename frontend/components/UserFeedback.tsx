@@ -18,11 +18,13 @@ const UserFeedback = () => {
 	if (error || success || alert) {
 		return (
 			<div
-				className={`fixed bottom-0 left-1/2 -transform-x-1/2 rounded-t-md ${
+				className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 rounded-t-md ${
 					error ? 'bg-red-700' : alert ? 'bg-blue-700' : 'bg-green-700'
 				}`}
 			>
-				<p className='text-white font-semibold'>{error || success || alert}</p>
+				<p className='text-white font-semibold text-xl p-2 px-3'>
+					{error || success || alert}
+				</p>
 			</div>
 		);
 	} else {

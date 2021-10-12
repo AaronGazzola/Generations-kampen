@@ -1,30 +1,23 @@
 export interface Trivia {
-	_id: string;
+	_id?: string;
 	question: string;
-	answers: {
-		a: string;
-		b: string;
-		c: string;
-		d: string;
+	answerA: string;
+	answerB: string;
+	answerC: string;
+	answerD: string;
+	feedback?: {
+		positive: number;
+		negative: number;
 	};
 }
 
 export interface TriviaState {
 	trivia?: Trivia;
-	video?: string;
 	loading: boolean;
-	success?: {
-		title?: string;
-		message: string;
-	};
-	error?: {
-		title?: string;
-		message: string;
-	};
-	alert?: {
-		title?: string;
-		message: string;
-	};
+	success?: string;
+	error?: string;
+	alert?: string;
+	trigger?: string;
 }
 
 export interface TriviaResponse {

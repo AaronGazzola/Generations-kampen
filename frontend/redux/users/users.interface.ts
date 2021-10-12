@@ -14,6 +14,7 @@ export interface UsersState {
 	success?: string;
 	error?: string;
 	alert?: string;
+	noUser?: boolean;
 }
 
 export interface LoginData {
