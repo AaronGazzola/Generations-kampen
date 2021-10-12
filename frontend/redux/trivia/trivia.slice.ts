@@ -77,6 +77,34 @@ export const uploadVideo = createAsyncThunk(
 	}
 );
 
+export const getAllTrivia = createAsyncThunk(
+	'trivia/getAll',
+	async (_, { rejectWithValue, getState }) => {
+		const {
+			users: { token }
+		} = getState() as RootState;
+
+		try {
+			const { data }: TriviaResponse = await axios.get(
+				`${baseUrl}/api/trivia`,
+				{
+					headers: {
+						...config.headers,
+						'Authorization': `Bearer ${token}`
+					}
+				}
+			);
+			return data;
+		} catch (error: any) {
+			return rejectWithValue(
+				error.response && error.response.data.message
+					? error.response.data.message
+					: error.message
+			);
+		}
+	}
+);
+
 const initialState: TriviaState = {
 	loading: false
 };
@@ -112,6 +140,17 @@ const triviaSlice = createSlice({
 			state.trigger = 'videoUploaded';
 		});
 		builder.addCase(uploadVideo.rejected, (state, action) => {
+			state.error = action.payload as string;
+			state.loading = false;
+		});
+		builder.addCase(getAllTrivia.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(getAllTrivia.fulfilled, (state, action) => {
+			state.loading = false;
+			state.allTrivia = action.payload.allTrivia;
+		});
+		builder.addCase(getAllTrivia.rejected, (state, action) => {
 			state.error = action.payload as string;
 			state.loading = false;
 		});

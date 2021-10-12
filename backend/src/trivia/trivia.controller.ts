@@ -2,6 +2,7 @@ import { TriviaService } from './trivia.service';
 import {
   Body,
   Controller,
+  Get,
   Post,
   UseGuards,
   ValidationPipe,
@@ -17,5 +18,11 @@ export class TriviaController {
   @Post('')
   addTrivia(@Body(ValidationPipe) triviaDto: TriviaDto) {
     return this.triviaService.addTrivia(triviaDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('')
+  getAllTrivia() {
+    return this.triviaService.getAllTrivia();
   }
 }

@@ -8,13 +8,13 @@ import { Trivia } from './interfaces/trivia.interface';
 
 @Injectable()
 export class TriviaService {
-  constructor(@InjectModel('Trivia') private trivia: Model<Trivia>) {}
+  constructor(@InjectModel('Trivia') private triviaModel: Model<Trivia>) {}
 
   async addTrivia(triviaDto: TriviaDto) {
     const { question, answerA, answerB, answerC, answerD } = triviaDto;
 
     // create trivia
-    const trivia = await this.trivia.create({
+    const trivia = await this.triviaModel.create({
       question,
       answerA,
       answerB,
@@ -25,6 +25,14 @@ export class TriviaService {
     return {
       success: true,
       trivia,
+    };
+  }
+
+  async getAllTrivia() {
+    const allTrivia = await this.triviaModel.find();
+    return {
+      success: true,
+      allTrivia,
     };
   }
 }

@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import {
 	addTrivia,
 	clearTriviaTrigger,
+	getAllTrivia,
 	uploadVideo
 } from '../../redux/trivia/trivia.slice';
 import { logout } from '../../redux/users/users.slice';
@@ -20,7 +21,9 @@ const Admin = () => {
 	const router = useRouter();
 	const dispatch = useAppDispatch();
 	const { isAuth } = useAppSelector(state => state.users);
-	const { trivia, trigger, loading } = useAppSelector(state => state.trivia);
+	const { trivia, trigger, loading, allTrivia } = useAppSelector(
+		state => state.trivia
+	);
 	const [videoUploaded, setVideoUploaded] = useState(false);
 	const initialState: { [index: string]: any } = {
 		id: '',
@@ -116,19 +119,27 @@ const Admin = () => {
 		}
 	}, [trigger]);
 
+	useEffect(() => {
+		dispatch(getAllTrivia());
+	}, []);
+
 	return (
 		<>
 			<UserFeedback />
 			<div className='p-2 h-screen'>
 				<form
-					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'
+					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'
 					style={{ background: 'rgba(255,255,255,0.7)' }}
 					onSubmit={submitHandler}
 				>
 					<h1 className='font-medium text-2xl mb-2'>
 						{id ? 'Edit trivia' : 'Add trivia'}
 					</h1>
-					{id && <p className='w-full'>id: {id}</p>}
+					{id && (
+						<p className='m-2'>
+							<span className='font-semibold'>ID:</span> {id}
+						</p>
+					)}
 					{id && videoUploaded && (
 						<video className='w-full rounded-md' preload='auto' controls>
 							<source
@@ -137,7 +148,12 @@ const Admin = () => {
 							/>
 						</video>
 					)}
-					<input id='video' type='file' onChange={changeFileHandler} />
+					<input
+						className='w-full my-4'
+						id='video'
+						type='file'
+						onChange={changeFileHandler}
+					/>
 					{Object.keys(formState).map(key => {
 						if (key === 'id' || key === 'video') return;
 						return (
@@ -198,6 +214,58 @@ const Admin = () => {
 						Log out
 					</button>
 				</form>
+				{allTrivia?.map(triv => (
+					<div
+						key={triv._id}
+						className='w-screen max-w-lg p-2 rounded-sm flex flex-col mt-2'
+						style={{ background: 'rgba(255,255,255,0.7)' }}
+					>
+						<p>
+							<span className='font-semibold'>ID: </span>
+							{triv._id}
+						</p>
+						<p>
+							<span className='font-semibold'>Question: </span>
+							{triv.question}
+						</p>
+						<p>
+							<span className='font-semibold'>Answer A: </span>
+							{triv.answerA}
+						</p>
+						<p>
+							<span className='font-semibold'>Answer B: </span>
+							{triv.answerB}
+						</p>
+						<p>
+							<span className='font-semibold'>Answer C: </span>
+							{triv.answerC}
+						</p>
+						<p>
+							<span className='font-semibold'>Answer D: </span>
+							{triv.answerD}
+						</p>
+						{triv.feedback && (
+							<p>
+								<span className='font-semibold'>Feedback: </span>
+								{(triv.feedback?.positive /
+									(triv.feedback?.negative + triv.feedback?.positive)) *
+									100}
+								% positive
+							</p>
+						)}
+						<div className='flex justify-around'>
+							<button
+								type='button'
+								className='mt-2 text-yellow-700 font-medium'
+							>
+								Edit
+							</button>
+							<button type='button' className='mt-2 text-red-900 font-medium'>
+								Delete
+							</button>
+						</div>
+					</div>
+				))}
 			</div>
 		</>
 	);

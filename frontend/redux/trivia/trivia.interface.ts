@@ -18,11 +18,13 @@ export interface TriviaState {
 	error?: string;
 	alert?: string;
 	trigger?: string;
+	allTrivia?: Trivia[];
 }
 
 export interface TriviaResponse {
 	data: {
 		success: boolean;
-		trivia: Trivia;
+		trivia?: Trivia;
+		allTrivia?: Trivia[];
 	};
 }
