@@ -28,5 +28,6 @@ export interface TriviaResponse {
 		success: boolean;
 		trivia?: Trivia;
 		allTrivia?: Trivia[];
+		resetPastTrivia?: boolean;
 	};
 }

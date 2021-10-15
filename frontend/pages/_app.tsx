@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import Layout from '../components/Layout';
 import '../styles/globals.css';
 import '../styles/animations.css';
+import UserFeedback from '../components/UserFeedback';
 
 declare global {
 	interface Document {
@@ -54,6 +55,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 		return (
 			<Provider store={store}>
 				<Layout>
+					<UserFeedback />
 					<Component {...pageProps} />
 				</Layout>
 			</Provider>

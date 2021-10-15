@@ -39,4 +39,9 @@ export class TriviaController {
   getAllTrivia() {
     return this.triviaService.getAllTrivia();
   }
+
+  @Post('/play')
+  getTrivia(@Body() { pastTrivia }: { pastTrivia: string[] }) {
+    return this.triviaService.getTrivia(pastTrivia);
+  }
 }

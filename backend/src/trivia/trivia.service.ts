@@ -76,4 +76,34 @@ export class TriviaService {
       success: true,
     };
   }
+
+  async getTrivia(pastTrivia: string[]) {
+    console.log(pastTrivia);
+    const allTriviaNotPast = await this.triviaModel.find({
+      _id: {
+        $not: { $in: pastTrivia },
+      },
+    });
+
+    if (allTriviaNotPast.length) {
+      const trivia =
+        allTriviaNotPast[Math.floor(Math.random() * allTriviaNotPast.length)];
+
+      return {
+        success: true,
+        trivia,
+      };
+    } else {
+      const count = await this.triviaModel.count();
+
+      const random = Math.floor(Math.random() * count);
+
+      const trivia = await this.triviaModel.findOne().skip(random);
+      return {
+        success: true,
+        trivia,
+        resetPastTrivia: true,
+      };
+    }
+  }
 }

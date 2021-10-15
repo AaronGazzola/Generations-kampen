@@ -6,7 +6,6 @@ import React, {
 	useEffect,
 	useState
 } from 'react';
-import UserFeedback from '../../../components/UserFeedback';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { resetPassword } from '../../../redux/users/users.slice';
 
@@ -54,7 +53,6 @@ const Index = () => {
 	}, [success, router]);
 	return (
 		<>
-			<UserFeedback />
 			<div className='p-2 h-screen'>
 				<form
 					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'

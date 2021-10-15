@@ -1,5 +1,4 @@
 import React, { FocusEvent, FormEvent, SyntheticEvent, useState } from 'react';
-import UserFeedback from '../../components/UserFeedback';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { forgotPassword } from '../../redux/users/users.slice';
 import Link from 'next/link';
@@ -41,7 +40,6 @@ const Index = () => {
 
 	return (
 		<>
-			<UserFeedback />
 			<div className='p-2 h-screen'>
 				<form
 					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'

@@ -33,7 +33,7 @@ const UserFeedback = () => {
 	if (error || success || alert) {
 		return (
 			<div
-				className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 rounded-t-md ${
+				className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 rounded-t-md z-20 ${
 					error ? 'bg-red-700' : alert ? 'bg-blue-700' : 'bg-green-700'
 				}`}
 			>

@@ -7,7 +7,6 @@ import React, {
 	useEffect,
 	useState
 } from 'react';
-import UserFeedback from '../../components/UserFeedback';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { Trivia } from '../../redux/trivia/trivia.interface';
 import {
@@ -196,7 +195,6 @@ const Admin = () => {
 
 	return (
 		<>
-			<UserFeedback />
 			<div className='p-2'>
 				<form
 					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'

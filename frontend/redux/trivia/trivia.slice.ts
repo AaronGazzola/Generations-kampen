@@ -133,6 +133,41 @@ export const getAllTrivia = createAsyncThunk(
 	}
 );
 
+export const getTrivia = createAsyncThunk(
+	'trivia/get',
+	async (_, { rejectWithValue, getState }) => {
+		const {
+			users: { token }
+		} = getState() as RootState;
+
+		const localPastTrivia = localStorage.getItem('pastTrivia');
+
+		const pastTrivia: string[] = localPastTrivia
+			? JSON.parse(localPastTrivia)
+			: [];
+
+		try {
+			const { data }: TriviaResponse = await axios.post(
+				`${baseUrl}/api/trivia/play`,
+				{ pastTrivia },
+				{
+					headers: {
+						...config.headers,
+						'Authorization': `Bearer ${token}`
+					}
+				}
+			);
+			return data;
+		} catch (error: any) {
+			return rejectWithValue(
+				error.response && error.response.data.message
+					? error.response.data.message
+					: error.message
+			);
+		}
+	}
+);
+
 export const deleteTrivia = createAsyncThunk(
 	'trivia/delete',
 	async (id: string, { rejectWithValue, getState }) => {
@@ -237,6 +272,31 @@ const triviaSlice = createSlice({
 			state.allTrivia = action.payload.allTrivia;
 		});
 		builder.addCase(getAllTrivia.rejected, (state, action) => {
+			state.error = action.payload as string;
+			state.loading = false;
+		});
+		builder.addCase(getTrivia.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(getTrivia.fulfilled, (state, action) => {
+			state.loading = false;
+			state.trivia = action.payload.trivia;
+			state.trigger = 'showVideo';
+			const localPastTrivia = localStorage.getItem('pastTrivia');
+
+			const pastTrivia: string[] = localPastTrivia
+				? JSON.parse(localPastTrivia)
+				: [];
+
+			if (action.payload.trivia)
+				pastTrivia.push(action.payload.trivia._id || '');
+
+			localStorage.setItem(
+				'pastTrivia',
+				JSON.stringify(action.payload.resetPastTrivia ? [] : pastTrivia)
+			);
+		});
+		builder.addCase(getTrivia.rejected, (state, action) => {
 			state.error = action.payload as string;
 			state.loading = false;
 		});

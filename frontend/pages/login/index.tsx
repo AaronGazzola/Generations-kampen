@@ -9,7 +9,6 @@ import {
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { getUser, login } from '../../redux/users/users.slice';
 import Link from 'next/link';
-import UserFeedback from '../../components/UserFeedback';
 
 const Login = () => {
 	const router = useRouter();
@@ -67,7 +66,6 @@ const Login = () => {
 
 	return (
 		<>
-			<UserFeedback />
 			<div className='p-2 h-screen'>
 				<form
 					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'

@@ -1,7 +1,8 @@
 import type { NextPage } from 'next';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { clearTriviaTrigger, getTrivia } from '../redux/trivia/trivia.slice';
 
 interface Bubble {
 	width: number;
@@ -19,7 +20,12 @@ const Home: NextPage = () => {
 	>('standby');
 	const [seconds, setSeconds] = useState(0);
 	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
+	const { trivia, trigger: triviaTrigger } = useAppSelector(
+		state => state.trivia
+	);
 	const [bubbles, setBubbles] = useState<Bubble[]>([]);
+	const [gotTrivia, setGotTrivia] = useState<boolean>(false);
+	const [showVideo, setShowVideo] = useState<boolean>(false);
 
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
@@ -40,7 +46,7 @@ const Home: NextPage = () => {
 
 	const startTriviaTimer = () => {
 		setPhase('play');
-		videoRef?.current?.play();
+		// videoRef?.current?.play();
 		let sec = 60;
 		setSeconds(sec);
 		const timer = setInterval(() => {
@@ -67,6 +73,21 @@ const Home: NextPage = () => {
 			}
 		}, 1000);
 	};
+
+	useEffect(() => {
+		if (phase === 'standby' && !gotTrivia) {
+			setShowVideo(false);
+			dispatch(getTrivia());
+			setGotTrivia(true);
+		}
+	}, [phase, gotTrivia]);
+
+	useEffect(() => {
+		if (triviaTrigger === 'showVideo') {
+			setShowVideo(true);
+			dispatch(clearTriviaTrigger());
+		}
+	}, [triviaTrigger]);
 
 	return (
 		<>
@@ -128,18 +149,20 @@ const Home: NextPage = () => {
 								</div>
 							</div>
 						)}
-						<video
-							ref={videoRef}
-							muted
-							className='w-full rounded-lg'
-							loop
-							preload='auto'
-						>
-							<source
-								src='http://localhost:5000/api/videos/video1'
-								type='video/mp4'
-							/>
-						</video>
+						{showVideo && trivia && (
+							<video
+								ref={videoRef}
+								muted
+								className='w-full rounded-lg'
+								loop
+								preload='auto'
+							>
+								<source
+									src={`http://localhost:5000/api/videos/${trivia?._id}`}
+									type='video/mp4'
+								/>
+							</video>
+						)}
 					</div>
 					{['blue', 'red', 'green', 'yellow'].map(color => (
 						<button
