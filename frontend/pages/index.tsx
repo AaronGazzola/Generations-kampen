@@ -18,6 +18,7 @@ interface Bubble {
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'play' | 'feedback' | 'countdown'
 	>('standby');
@@ -29,6 +30,7 @@ const Home: NextPage = () => {
 	const [bubbles, setBubbles] = useState<Bubble[]>([]);
 	const [gotTrivia, setGotTrivia] = useState<boolean>(false);
 	const [showVideo, setShowVideo] = useState<boolean>(false);
+	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(true);
 
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
@@ -92,11 +94,20 @@ const Home: NextPage = () => {
 		}
 	}, [triviaTrigger]);
 
+	useEffect(() => {
+		if (
+			(buttonBoxRef.current?.scrollTop &&
+				buttonBoxRef.current?.scrollTop > 0) ||
+			buttonBoxRef.current?.offsetHeight === buttonBoxRef.current?.scrollHeight
+		)
+			setShowScrollIcon(false);
+	}, [buttonBoxRef.current?.scrollTop, buttonBoxRef.current]);
+
 	return (
 		<>
 			<Meta />
-			<div className='fixed top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center overflow-visible'>
-				<div className='w-full h-full max-w-xl overflow-visible relative'>
+			<div className='fixed top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center overflow-visible z-10'>
+				<div className='w-full h-full max-w-4xl overflow-visible relative'>
 					<div
 						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center'
 						style={{
@@ -106,28 +117,32 @@ const Home: NextPage = () => {
 							transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
 						}}
 					>
-						<div
-							className='flex flex-col items-center justify-start w-full h-full'
-							style={{ maxHeight: 500 }}
-						>
-							<div className='w-full'>
-								<Image src={mainTitle} layout='responsive' />
-							</div>
-							<div className='w-full' style={{ maxWidth: 280 }}>
-								<Image src={chestImage} layout='responsive' />
-							</div>
-
+						<div className='flex flex-col-reverse items-center justify-around w-full h-full'>
 							<button
 								onClick={playHandler}
-								className='rounded-md w-72 h-20 bg-brown-dark text-yellow-dark text-5xl font-bold pb-1.5 mt-auto'
+								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl ${
+									screenHeight > 800 ? 'sm:text-8xl' : ''
+								} font-bold px-4 py-2.5 pb-4 mb-4`}
 							>
 								STARTA
 							</button>
+							<div
+								className='w-full'
+								style={{
+									width: `clamp(0px, 100%, calc(((var(--vh) * 100) - 276px) * 0.905901116427))`
+								}}
+							>
+								<Image src={chestImage} layout='responsive' />
+							</div>
+							<div className='w-full' style={{ maxWidth: 640 }}>
+								<Image src={mainTitle} layout='responsive' />
+							</div>
 						</div>
 					</div>
 					<div
 						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-around'
 						style={{
+							maxHeight: 900,
 							transform:
 								phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
 							opacity: phase !== 'standby' ? 1 : 0,
@@ -140,7 +155,34 @@ const Home: NextPage = () => {
 						>
 							Vilket foretag ar det reklam for?
 						</h1>
-						<div className='p-2'>
+
+						<div className='p-2 flex justify-center relative'>
+							{phase === 'countdown' && (
+								<div
+									className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10'
+									style={{
+										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
+											screenHeight > 580 && buttonBoxRef.current?.scrollHeight
+												? buttonBoxRef.current?.scrollHeight + 16
+												: 178
+										}px)) * ${
+											videoRef.current
+												? videoRef.current?.offsetWidth /
+												  videoRef.current?.offsetHeight
+												: '1'
+										})`
+									}}
+								>
+									<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
+										<p
+											className='text-white text-2xl font-bold'
+											style={{ animation: 'countdown 1s ease infinite' }}
+										>
+											{seconds < 4 ? seconds : ''}
+										</p>
+									</div>
+								</div>
+							)}
 							{showVideo && trivia && (
 								<video
 									ref={videoRef}
@@ -149,7 +191,11 @@ const Home: NextPage = () => {
 									loop
 									preload='auto'
 									style={{
-										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - 150px)) * ${
+										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
+											screenHeight > 580 && buttonBoxRef.current?.scrollHeight
+												? buttonBoxRef.current?.scrollHeight + 16
+												: 178
+										}px)) * ${
 											videoRef.current
 												? videoRef.current?.offsetWidth /
 												  videoRef.current?.offsetHeight
@@ -164,27 +210,24 @@ const Home: NextPage = () => {
 								</video>
 							)}
 						</div>
-						{/* <div 
-						className='w-full b-blue'
-						style={{paddingTop: videoRef.current ? `${videoRef.current.offsetHeight / videoRef.current.offsetWidth * 100}%` : ''}}></div> */}
-						{/* <div className='p-2 relative'>
-							{phase === 'countdown' && (
-								<div className='absolute top-0 left-0 bottom-0 right-0 z-10 p-2'>
-									<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
-										<p
-											className='text-white text-2xl font-bold'
-											style={{ animation: 'countdown 1s ease infinite' }}
-										>
-											{seconds < 4 ? seconds : ''}
-										</p>
-									</div>
-								</div>
-							)}
-						</div> */}
 						<div
-							className='overflow-x-scroll w-full py-2 flex flex-col items-center'
+							className='overflow-y-auto w-min py-2 flex flex-col items-center relative '
 							style={{ minHeight: 75 }}
+							ref={buttonBoxRef}
 						>
+							{phase === 'play' && showScrollIcon && (
+								<svg
+									className='absolute right-2 top-1/2 transform -translate-y-1/2 fill-current text-white'
+									style={{
+										animation: 'scroll-icon 1s ease-in-out infinite alternate'
+									}}
+									xmlns='http://www.w3.org/2000/svg'
+									viewBox='-6 -2 24 24'
+									width='24'
+								>
+									<path d='M5 16.573V3.419L2.464 5.954A1 1 0 0 1 1.05 4.54L5.293.297a1 1 0 0 1 1.414 0L10.95 4.54a1 1 0 1 1-1.414 1.414L7 3.42v13.154l2.536-2.536a1 1 0 1 1 1.414 1.414l-4.243 4.243a.997.997 0 0 1-1.414 0L1.05 15.451a1 1 0 1 1 1.414-1.414L5 16.573z'></path>
+								</svg>
+							)}
 							{['blue', 'red', 'green', 'yellow'].map(color => (
 								<button
 									key={color}
@@ -195,103 +238,13 @@ const Home: NextPage = () => {
 									style={{
 										borderRadius: 25,
 										minHeight: 50,
-										maxWidth: videoRef.current?.offsetWidth
+										width: videoRef.current?.offsetWidth
 									}}
 								>
 									{phase === 'countdown' ? '' : color}
 								</button>
 							))}
 						</div>
-					</div>
-				</div>
-			</div>
-			{/* <div
-				className='relative z-10 max-w-lg w-screen overflow-visible'
-				style={{ minWidth: 320, height: 'calc(var(--vh) * 100)' }}
-			>
-				<div
-					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-around overflow-hidden'
-					style={{
-						transform:
-							phase === 'standby' ? 'translateX(0%)' : 'translateX(-100%)',
-						opacity: phase === 'standby' ? 1 : 0,
-						transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
-					}}
-				>
-					<div className='w-full'>
-						<Image src={mainTitle} layout='responsive' />
-					</div>
-					<div className='w-full' style={{ maxWidth: 280 }}>
-						<Image src={chestImage} layout='responsive' />
-					</div>
-
-					<button
-						onClick={playHandler}
-						className='rounded-md w-72 h-20 bg-brown-dark text-yellow-dark text-5xl font-bold pb-1.5'
-					>
-						STARTA
-					</button>
-				</div>
-				<div
-					className='absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-start overflow-hidden'
-					style={{
-						transform:
-							phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
-						opacity: phase !== 'standby' ? 1 : 0,
-						transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
-					}}
-				>
-					<h1
-						className='whitespace-nowrap text-white font-bold italic'
-						style={{ fontSize: '1.2rem' }}
-					>
-						Vilket foretag ar det reklam for?
-					</h1>
-					<div className='p-2 relative'>
-						{phase === 'countdown' && (
-							<div className='absolute top-0 left-0 bottom-0 right-0 z-10 p-2'>
-								<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
-									<p
-										className='text-white text-2xl font-bold'
-										style={{ animation: 'countdown 1s ease infinite' }}
-									>
-										{seconds < 4 ? seconds : ''}
-									</p>
-								</div>
-							</div>
-						)}
-						{showVideo && trivia && (
-							<video
-								ref={videoRef}
-								muted
-								className='w-full rounded-lg'
-								loop
-								preload='auto'
-							>
-								<source
-									src={`http://localhost:5000/api/videos/${trivia?._id}`}
-									type='video/mp4'
-								/>
-							</video>
-						)}
-					</div>
-					<div>
-						{['blue', 'red', 'green', 'yellow'].map(color => (
-							<button
-								key={color}
-								onClick={() => setPhase('feedback')}
-								className={`h-12 w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
-									phase === 'countdown' ? 'opacity-20' : ``
-								}`}
-								style={{
-									borderRadius: 25,
-									minHeight: 50
-									// maxWidth: 285
-								}}
-							>
-								{phase === 'countdown' ? '' : color}
-							</button>
-						))}
 					</div>
 				</div>
 			</div>
@@ -379,7 +332,7 @@ const Home: NextPage = () => {
 						></div>
 					))}
 				</div>
-			</div> */}
+			</div>
 		</>
 	);
 };
