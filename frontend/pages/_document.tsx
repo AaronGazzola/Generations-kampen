@@ -11,7 +11,7 @@ class MyDocument extends Document {
 					<link rel='manifest' href='/manifest.json' />
 				</Head>
 				<body
-					className='bg-brown-lightest flex flex-col items-center justify-start overflow-x-hidden'
+					className='bg-brown-lightest'
 					style={{
 						backgroundImage: `url('/assets/images/bg_wood.png')`,
 						backgroundRepeat: 'repeat-x',

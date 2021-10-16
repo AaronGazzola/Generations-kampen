@@ -95,7 +95,117 @@ const Home: NextPage = () => {
 	return (
 		<>
 			<Meta />
-			<div
+			<div className='fixed top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center overflow-visible'>
+				<div className='w-full h-full max-w-xl overflow-visible relative'>
+					<div
+						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center'
+						style={{
+							transform:
+								phase === 'standby' ? 'translateX(0%)' : 'translateX(-100%)',
+							opacity: phase === 'standby' ? 1 : 0,
+							transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
+						}}
+					>
+						<div
+							className='flex flex-col items-center justify-start w-full h-full'
+							style={{ maxHeight: 500 }}
+						>
+							<div className='w-full'>
+								<Image src={mainTitle} layout='responsive' />
+							</div>
+							<div className='w-full' style={{ maxWidth: 280 }}>
+								<Image src={chestImage} layout='responsive' />
+							</div>
+
+							<button
+								onClick={playHandler}
+								className='rounded-md w-72 h-20 bg-brown-dark text-yellow-dark text-5xl font-bold pb-1.5 mt-auto'
+							>
+								STARTA
+							</button>
+						</div>
+					</div>
+					<div
+						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-around'
+						style={{
+							transform:
+								phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
+							opacity: phase !== 'standby' ? 1 : 0,
+							transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
+						}}
+					>
+						<h1
+							className='whitespace-nowrap text-white font-bold italic'
+							style={{ fontSize: '1.2rem' }}
+						>
+							Vilket foretag ar det reklam for?
+						</h1>
+						<div className='p-2'>
+							{showVideo && trivia && (
+								<video
+									ref={videoRef}
+									muted
+									className='w-full rounded-lg'
+									loop
+									preload='auto'
+									style={{
+										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - 150px)) * ${
+											videoRef.current
+												? videoRef.current?.offsetWidth /
+												  videoRef.current?.offsetHeight
+												: '1'
+										})`
+									}}
+								>
+									<source
+										src={`http://localhost:5000/api/videos/${trivia?._id}`}
+										type='video/mp4'
+									/>
+								</video>
+							)}
+						</div>
+						{/* <div 
+						className='w-full b-blue'
+						style={{paddingTop: videoRef.current ? `${videoRef.current.offsetHeight / videoRef.current.offsetWidth * 100}%` : ''}}></div> */}
+						{/* <div className='p-2 relative'>
+							{phase === 'countdown' && (
+								<div className='absolute top-0 left-0 bottom-0 right-0 z-10 p-2'>
+									<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
+										<p
+											className='text-white text-2xl font-bold'
+											style={{ animation: 'countdown 1s ease infinite' }}
+										>
+											{seconds < 4 ? seconds : ''}
+										</p>
+									</div>
+								</div>
+							)}
+						</div> */}
+						<div
+							className='overflow-x-scroll w-full py-2 flex flex-col items-center'
+							style={{ minHeight: 75 }}
+						>
+							{['blue', 'red', 'green', 'yellow'].map(color => (
+								<button
+									key={color}
+									onClick={() => setPhase('feedback')}
+									className={`h-12 w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
+										phase === 'countdown' ? 'opacity-20' : ``
+									}`}
+									style={{
+										borderRadius: 25,
+										minHeight: 50,
+										maxWidth: videoRef.current?.offsetWidth
+									}}
+								>
+									{phase === 'countdown' ? '' : color}
+								</button>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+			{/* <div
 				className='relative z-10 max-w-lg w-screen overflow-visible'
 				style={{ minWidth: 320, height: 'calc(var(--vh) * 100)' }}
 			>
@@ -269,7 +379,7 @@ const Home: NextPage = () => {
 						></div>
 					))}
 				</div>
-			</div>
+			</div> */}
 		</>
 	);
 };
