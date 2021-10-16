@@ -11,9 +11,11 @@ class MyDocument extends Document {
 					<link rel='manifest' href='/manifest.json' />
 				</Head>
 				<body
-					className='bg-gradient-to-r from-brown-lightest to-brown min-h-screen flex flex-col items-center justify-start overflow-x-hidden'
+					className='bg-brown-lightest flex flex-col items-center justify-start overflow-x-hidden'
 					style={{
-						backgroundAttachment: 'fixed'
+						backgroundImage: `url('/assets/images/bg_wood.png')`,
+						backgroundRepeat: 'repeat-x',
+						backgroundPosition: 'center'
 					}}
 				>
 					<Main />

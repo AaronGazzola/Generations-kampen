@@ -1,8 +1,11 @@
 import type { NextPage } from 'next';
+import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { clearTriviaTrigger, getTrivia } from '../redux/trivia/trivia.slice';
+import mainTitle from '../public/assets/images/main_title.png';
+import chestImage from '../public/assets/images/chest.png';
 
 interface Bubble {
 	width: number;
@@ -93,7 +96,7 @@ const Home: NextPage = () => {
 		<>
 			<Meta />
 			<div
-				className='relative z-10 max-w-2xl w-screen overflow-visible'
+				className='relative z-10 max-w-lg w-screen overflow-visible'
 				style={{ minWidth: 320, height: 'calc(var(--vh) * 100)' }}
 			>
 				<div
@@ -105,15 +108,13 @@ const Home: NextPage = () => {
 						transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
 					}}
 				>
-					<h1
-						className='text-yellow-dark font-bold'
-						style={{ fontSize: '2.7rem' }}
-					>
-						UTMANINGEN
-					</h1>
-					<div className='w-60 h-64 bg-gray-200 rounded-lg flex items-center justify-center bg-opacity-60'>
-						<p className='text-brown font-semibold text-lg'>[Image]</p>
+					<div className='w-full'>
+						<Image src={mainTitle} layout='responsive' />
 					</div>
+					<div className='w-full' style={{ maxWidth: 280 }}>
+						<Image src={chestImage} layout='responsive' />
+					</div>
+
 					<button
 						onClick={playHandler}
 						className='rounded-md w-72 h-20 bg-brown-dark text-yellow-dark text-5xl font-bold pb-1.5'
@@ -164,21 +165,24 @@ const Home: NextPage = () => {
 							</video>
 						)}
 					</div>
-					{['blue', 'red', 'green', 'yellow'].map(color => (
-						<button
-							key={color}
-							onClick={() => setPhase('feedback')}
-							className={`h-12 w-full mb-1 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
-								phase === 'countdown' ? 'opacity-20' : ``
-							}`}
-							style={{
-								borderRadius: 20,
-								maxWidth: 285
-							}}
-						>
-							{phase === 'countdown' ? '' : color}
-						</button>
-					))}
+					<div>
+						{['blue', 'red', 'green', 'yellow'].map(color => (
+							<button
+								key={color}
+								onClick={() => setPhase('feedback')}
+								className={`h-12 w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
+									phase === 'countdown' ? 'opacity-20' : ``
+								}`}
+								style={{
+									borderRadius: 25,
+									minHeight: 50
+									// maxWidth: 285
+								}}
+							>
+								{phase === 'countdown' ? '' : color}
+							</button>
+						))}
+					</div>
 				</div>
 			</div>
 			<div

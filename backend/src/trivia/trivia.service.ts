@@ -78,7 +78,6 @@ export class TriviaService {
   }
 
   async getTrivia(pastTrivia: string[]) {
-    console.log(pastTrivia);
     const allTriviaNotPast = await this.triviaModel.find({
       _id: {
         $not: { $in: pastTrivia },
