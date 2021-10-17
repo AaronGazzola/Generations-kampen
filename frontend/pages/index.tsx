@@ -18,6 +18,7 @@ interface Bubble {
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const srcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'play' | 'feedback' | 'countdown'
@@ -29,9 +30,8 @@ const Home: NextPage = () => {
 	);
 	const [bubbles, setBubbles] = useState<Bubble[]>([]);
 	const [gotTrivia, setGotTrivia] = useState<boolean>(false);
-	const [showVideo, setShowVideo] = useState<boolean>(false);
 	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(true);
-
+	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
 		const getRandomInteger = (min: number, max: number) => {
@@ -81,27 +81,54 @@ const Home: NextPage = () => {
 
 	useEffect(() => {
 		if (phase === 'standby' && !gotTrivia) {
-			setShowVideo(false);
 			dispatch(getTrivia());
 			setGotTrivia(true);
 		}
 	}, [phase, gotTrivia]);
 
 	useEffect(() => {
-		if (triviaTrigger === 'showVideo') {
-			setShowVideo(true);
+		if (triviaTrigger === 'showVideo' && srcRef.current) {
+			srcRef.current.src = `${
+				process.env.NODE_ENV === 'production'
+					? process.env.NEXT_PUBLIC_BASE_URL_PROD
+					: process.env.NEXT_PUBLIC_BASE_URL_DEV
+			}/api/videos/${trivia?._id}`;
+			videoRef.current?.load();
 			dispatch(clearTriviaTrigger());
 		}
 	}, [triviaTrigger]);
 
 	useEffect(() => {
 		if (
-			(buttonBoxRef.current?.scrollTop &&
+			phase === 'play' &&
+			((buttonBoxRef.current?.scrollTop &&
 				buttonBoxRef.current?.scrollTop > 0) ||
-			buttonBoxRef.current?.offsetHeight === buttonBoxRef.current?.scrollHeight
+				buttonBoxRef.current?.offsetHeight ===
+					buttonBoxRef.current?.scrollHeight)
 		)
 			setShowScrollIcon(false);
 	}, [buttonBoxRef.current?.scrollTop, buttonBoxRef.current]);
+
+	useEffect(() => {
+		const videoMetaDataHandler = () => {
+			if (buttonBoxRef.current && videoRef.current)
+				setVideoWidth(
+					`clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
+						screenHeight > 580 ? buttonBoxRef.current?.scrollHeight + 16 : 178
+					}px)) * ${
+						videoRef.current?.videoWidth / videoRef.current?.videoHeight
+					})`
+				);
+		};
+		if (videoRef.current) {
+			videoRef.current.addEventListener('loadedmetadata', videoMetaDataHandler);
+		}
+		return () =>
+			videoRef.current?.removeEventListener(
+				'loadedmetadata',
+				videoMetaDataHandler
+			);
+	}, [videoRef.current, buttonBoxRef.current]);
 
 	return (
 		<>
@@ -156,68 +183,45 @@ const Home: NextPage = () => {
 							Vilket foretag ar det reklam for?
 						</h1>
 
-						<div className='p-2 flex justify-center relative'>
+						<div
+							className='p-2 flex justify-center relative'
+							style={{
+								width: videoWidth
+							}}
+						>
 							{phase === 'countdown' && (
-								<div
-									className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10'
-									style={{
-										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
-											screenHeight > 580 && buttonBoxRef.current?.scrollHeight
-												? buttonBoxRef.current?.scrollHeight + 16
-												: 178
-										}px)) * ${
-											videoRef.current
-												? videoRef.current?.offsetWidth /
-												  videoRef.current?.offsetHeight
-												: '1'
-										})`
-									}}
-								>
+								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full'>
 									<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
 										<p
 											className='text-white text-2xl font-bold'
-											style={{ animation: 'countdown 1s ease infinite' }}
+											style={{
+												animation:
+													seconds <= 3 ? 'countdown 1s ease infinite' : ''
+											}}
 										>
-											{seconds < 4 ? seconds : ''}
+											{seconds <= 3 ? seconds : ''}
 										</p>
 									</div>
 								</div>
 							)}
-							{showVideo && trivia && (
-								<video
-									ref={videoRef}
-									muted
-									className='w-full rounded-lg'
-									loop
-									preload='auto'
-									style={{
-										width: `clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
-											screenHeight > 580 && buttonBoxRef.current?.scrollHeight
-												? buttonBoxRef.current?.scrollHeight + 16
-												: 178
-										}px)) * ${
-											videoRef.current
-												? videoRef.current?.offsetWidth /
-												  videoRef.current?.offsetHeight
-												: '1'
-										})`
-									}}
-								>
-									<source
-										src={`http://localhost:5000/api/videos/${trivia?._id}`}
-										type='video/mp4'
-									/>
-								</video>
-							)}
+
+							<video
+								ref={videoRef}
+								muted
+								className='w-full rounded-lg'
+								loop
+								preload='auto'
+							>
+								<source ref={srcRef} type='video/mp4' />
+							</video>
 						</div>
-						<div
-							className='overflow-y-auto w-min py-2 flex flex-col items-center relative '
-							style={{ minHeight: 75 }}
-							ref={buttonBoxRef}
-						>
-							{phase === 'play' && showScrollIcon && (
+						{phase === 'play' && showScrollIcon && (
+							<div
+								className='fixed bottom-0 left-1/2 transform -translate-x-1/2 z-10 overflow-x-visible'
+								style={{ width: videoWidth, height: 0 }}
+							>
 								<svg
-									className='absolute right-2 top-1/2 transform -translate-y-1/2 fill-current text-white'
+									className='absolute right-10 top-1/2 transform -translate-y-1/2 fill-current text-gray-800 rounded-full border bg-white opacity-40'
 									style={{
 										animation: 'scroll-icon 1s ease-in-out infinite alternate'
 									}}
@@ -227,18 +231,23 @@ const Home: NextPage = () => {
 								>
 									<path d='M5 16.573V3.419L2.464 5.954A1 1 0 0 1 1.05 4.54L5.293.297a1 1 0 0 1 1.414 0L10.95 4.54a1 1 0 1 1-1.414 1.414L7 3.42v13.154l2.536-2.536a1 1 0 1 1 1.414 1.414l-4.243 4.243a.997.997 0 0 1-1.414 0L1.05 15.451a1 1 0 1 1 1.414-1.414L5 16.573z'></path>
 								</svg>
-							)}
+							</div>
+						)}
+						<div
+							className='overflow-y-auto py-2 flex flex-col items-center relative'
+							style={{ minHeight: 75, width: videoWidth }}
+							ref={buttonBoxRef}
+						>
 							{['blue', 'red', 'green', 'yellow'].map(color => (
 								<button
 									key={color}
 									onClick={() => setPhase('feedback')}
-									className={`h-12 w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
+									className={`w-full h-12 mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
 										phase === 'countdown' ? 'opacity-20' : ``
 									}`}
 									style={{
 										borderRadius: 25,
-										minHeight: 50,
-										width: videoRef.current?.offsetWidth
+										minHeight: 50
 									}}
 								>
 									{phase === 'countdown' ? '' : color}
