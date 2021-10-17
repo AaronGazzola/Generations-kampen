@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { clearTriviaTrigger, getTrivia } from '../redux/trivia/trivia.slice';
 import mainTitle from '../public/assets/images/main_title.png';
 import chestImage from '../public/assets/images/chest.png';
+import chestGlow from '../public/assets/images/chest_glow.png';
 
 interface Bubble {
 	width: number;
@@ -147,19 +148,35 @@ const Home: NextPage = () => {
 						<div className='flex flex-col-reverse items-center justify-around w-full h-full'>
 							<button
 								onClick={playHandler}
-								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl ${
+								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl z-10 ${
 									screenHeight > 800 ? 'sm:text-8xl' : ''
 								} font-bold px-4 py-2.5 pb-4 mb-4`}
 							>
 								STARTA
 							</button>
 							<div
-								className='w-full'
+								className='relative'
 								style={{
-									width: `clamp(0px, 100%, calc(((var(--vh) * 100) - 276px) * 0.905901116427))`
+									width: `clamp(0px, 100%, calc(((var(--vh) * 100) - 276px) * 0.905901116427))`,
+									height: `clamp(0px, 100%, calc((var(--vh) * 100) - 276px))`
 								}}
 							>
-								<Image src={chestImage} layout='responsive' />
+								<div
+									className='absolute top-0 left-0 right-0 bottom-0 opacity-0'
+									style={{
+										animation: 'chest-glow 4s ease-in-out .7s infinite'
+									}}
+								>
+									<Image src={chestGlow} layout='responsive' />
+								</div>
+								<div
+									className='absolute top-0 left-0 right-0 bottom-0'
+									style={{
+										animation: 'chest-pulse 2s ease-in-out infinite alternate'
+									}}
+								>
+									<Image src={chestImage} layout='responsive' />
+								</div>
 							</div>
 							<div className='w-full' style={{ maxWidth: 640 }}>
 								<Image src={mainTitle} layout='responsive' />
