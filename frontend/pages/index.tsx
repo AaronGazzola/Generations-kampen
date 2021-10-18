@@ -157,8 +157,8 @@ const Home: NextPage = () => {
 							<div
 								className='relative'
 								style={{
-									width: `clamp(0px, 100%, calc(((var(--vh) * 100) - 276px) * 0.905901116427))`,
-									height: `clamp(0px, 100%, calc((var(--vh) * 100) - 276px))`
+									width: `clamp(0px, calc(((var(--vh) * 100) - 276px) * 0.905901116427), 540px)`,
+									height: `clamp(0px, calc((var(--vh) * 100) - 276px), 540px)`
 								}}
 							>
 								<div

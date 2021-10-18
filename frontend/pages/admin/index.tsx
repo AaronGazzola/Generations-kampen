@@ -28,11 +28,12 @@ const Admin = () => {
 	);
 	const [displayTrivia, setDisplayTrivia] = useState(allTrivia);
 	const [showVideo, setShowVideo] = useState(false);
+	const [showFileInput, setShowFileInput] = useState(true);
 	const [confirmDeleteId, setConfirmDeleteId] = useState('');
 	const [searchValue, setSearchValue] = useState('');
 	const initialState: { [index: string]: any } = {
 		id: '',
-		correctAnswer: 'A',
+		correctAnswer: '',
 		video: null,
 		question: {
 			value: '',
@@ -72,6 +73,7 @@ const Admin = () => {
 		correctAnswer
 	} = formState;
 	const formIsValid =
+		correctAnswer &&
 		answerA.isValid &&
 		answerB.isValid &&
 		answerC.isValid &&
@@ -131,9 +133,12 @@ const Admin = () => {
 	};
 
 	const editTriviaButtonHandler = (triv: Trivia) => {
-		let newFormState: { [index: string]: any } = { id: triv._id };
+		let newFormState: { [index: string]: any } = {
+			id: triv._id,
+			correctAnswer: triv.correctAnswer
+		};
 		Object.keys(triv).forEach(key => {
-			if (['feedback', '_id', '__v'].includes(key)) return;
+			if (['feedback', '_id', '__v', 'correctAnswer'].includes(key)) return;
 			newFormState = {
 				...newFormState,
 				[key]: { isValid: true, isTouched: false, value: triv[key] }
@@ -193,6 +198,10 @@ const Admin = () => {
 		setDisplayTrivia(allTrivia);
 	}, [allTrivia]);
 
+	useEffect(() => {
+		if (!showFileInput) setShowFileInput(true);
+	}, [showFileInput]);
+
 	return (
 		<>
 			<div className='p-2'>
@@ -217,12 +226,14 @@ const Admin = () => {
 							/>
 						</video>
 					)}
-					<input
-						className='w-full my-4'
-						id='video'
-						type='file'
-						onChange={changeFileHandler}
-					/>
+					{showFileInput && (
+						<input
+							className='w-full my-4'
+							id='video'
+							type='file'
+							onChange={changeFileHandler}
+						/>
+					)}
 					{Object.keys(formState).map(key => {
 						if (['correctAnswer', 'id', 'video'].includes(key)) return;
 						return (
@@ -272,15 +283,15 @@ const Admin = () => {
 							<div className='flex cursor-pointer items-center mt-1' key={item}>
 								<input
 									type='radio'
-									id={`${item}correct`}
+									id={`${item.toLocaleLowerCase()}correct`}
 									name='correct-answer'
 									className='cursor-pointer'
 									onChange={changeHandler}
-									checked={correctAnswer === item}
+									checked={correctAnswer === item.toLocaleLowerCase()}
 								/>
 								<label
 									className={`text-sm font-medium p-1 cursor-pointer`}
-									htmlFor={`${item}correct`}
+									htmlFor={`${item.toLocaleLowerCase()}correct`}
 								>
 									{item}
 								</label>
@@ -299,7 +310,9 @@ const Admin = () => {
 					</button>
 					<button
 						type='button'
-						onClick={() => setFormState(initialState)}
+						onClick={() => {
+							setFormState(initialState), setShowFileInput(false);
+						}}
 						className='mt-2 text-yellow-700 font-medium text-sm'
 					>
 						Clear form
