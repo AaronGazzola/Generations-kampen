@@ -19,6 +19,7 @@ interface Bubble {
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const questionRef = useRef<HTMLHeadingElement>(null);
 	const srcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
@@ -33,6 +34,8 @@ const Home: NextPage = () => {
 	const [gotTrivia, setGotTrivia] = useState<boolean>(false);
 	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(true);
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
+	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
+	const waterColor = '#228ABF';
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
 		const getRandomInteger = (min: number, max: number) => {
@@ -52,7 +55,7 @@ const Home: NextPage = () => {
 
 	const startTriviaTimer = () => {
 		setPhase('play');
-		// videoRef?.current?.play();
+		videoRef?.current?.play();
 		let sec = 60;
 		setSeconds(sec);
 		const timer = setInterval(() => {
@@ -78,6 +81,12 @@ const Home: NextPage = () => {
 				startTriviaTimer();
 			}
 		}, 1000);
+	};
+
+	const answerHandler = (answer: string) => {
+		setPhase('feedback');
+		setSelectedAnswer(answer);
+		videoRef.current?.pause();
 	};
 
 	useEffect(() => {
@@ -108,13 +117,15 @@ const Home: NextPage = () => {
 					buttonBoxRef.current?.scrollHeight)
 		)
 			setShowScrollIcon(false);
-	}, [buttonBoxRef.current?.scrollTop, buttonBoxRef.current]);
+	}, [buttonBoxRef.current?.scrollTop, buttonBoxRef.current, phase]);
 
 	useEffect(() => {
 		const videoMetaDataHandler = () => {
-			if (buttonBoxRef.current && videoRef.current)
+			if (buttonBoxRef.current && videoRef.current && questionRef.current)
 				setVideoWidth(
-					`clamp(280px, 100%, calc(((var(--vh) * 100) - 28px - ${
+					`clamp(280px, 100%, calc(((var(--vh) * 100) - ${
+						questionRef.current.offsetHeight
+					}px - ${
 						screenHeight > 580 ? buttonBoxRef.current?.scrollHeight + 16 : 178
 					}px)) * ${
 						videoRef.current?.videoWidth / videoRef.current?.videoHeight
@@ -129,7 +140,8 @@ const Home: NextPage = () => {
 				'loadedmetadata',
 				videoMetaDataHandler
 			);
-	}, [videoRef.current, buttonBoxRef.current]);
+	}, [videoRef.current, buttonBoxRef.current, questionRef.current]);
+	console.log(phase);
 
 	return (
 		<>
@@ -148,9 +160,12 @@ const Home: NextPage = () => {
 						<div className='flex flex-col-reverse items-center justify-around w-full h-full'>
 							<button
 								onClick={playHandler}
-								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl z-10 ${
+								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl z-10 tracking-wider ${
 									screenHeight > 800 ? 'sm:text-8xl' : ''
-								} font-bold px-4 py-2.5 pb-4 mb-4`}
+								} font-bold px-4 py-3 mb-4`}
+								style={{
+									fontFamily: "'Londrina Solid', sans-serif"
+								}}
 							>
 								STARTA
 							</button>
@@ -162,15 +177,15 @@ const Home: NextPage = () => {
 								}}
 							>
 								<div
-									className='absolute top-0 left-0 right-0 bottom-0 opacity-0'
+									className='absolute top-0 left-0 right-0 bottom-0 opacity-0 origin-center'
 									style={{
-										animation: 'chest-glow 4s ease-in-out .7s infinite'
+										animation: 'chest-glow 4s ease-in-out .6s infinite'
 									}}
 								>
 									<Image src={chestGlow} layout='responsive' />
 								</div>
 								<div
-									className='absolute top-0 left-0 right-0 bottom-0'
+									className='absolute top-0 left-0 right-0 bottom-0 origin-center'
 									style={{
 										animation: 'chest-pulse 2s ease-in-out infinite alternate'
 									}}
@@ -194,10 +209,11 @@ const Home: NextPage = () => {
 						}}
 					>
 						<h1
+							ref={questionRef}
 							className='whitespace-nowrap text-white font-bold italic'
 							style={{ fontSize: '1.2rem' }}
 						>
-							Vilket foretag ar det reklam for?
+							{trivia?.question}
 						</h1>
 
 						<div
@@ -224,10 +240,14 @@ const Home: NextPage = () => {
 
 							<video
 								ref={videoRef}
-								muted
 								className='w-full rounded-lg'
 								loop
 								preload='auto'
+								onClick={() =>
+									videoRef.current?.paused
+										? videoRef.current?.play()
+										: videoRef.current?.pause()
+								}
 							>
 								<source ref={srcRef} type='video/mp4' />
 							</video>
@@ -255,19 +275,37 @@ const Home: NextPage = () => {
 							style={{ minHeight: 75, width: videoWidth }}
 							ref={buttonBoxRef}
 						>
-							{['blue', 'red', 'green', 'yellow'].map(color => (
+							{[
+								{ key: 'a', color: 'blue' },
+								{ key: 'b', color: 'red' },
+								{ key: 'c', color: 'green' },
+								{ key: 'd', color: 'yellow' }
+							].map(item => (
 								<button
-									key={color}
-									onClick={() => setPhase('feedback')}
-									className={`w-full h-12 mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${color} ${
-										phase === 'countdown' ? 'opacity-20' : ``
-									}`}
+									key={item.key}
+									onClick={() => answerHandler(item.key)}
+									className={`w-full h-12 mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${
+										item.color
+									} ${
+										phase === 'countdown'
+											? 'opacity-20'
+											: phase === 'feedback' && selectedAnswer !== item.key
+											? `opacity-0`
+											: ''
+									}
+									${['countdown', 'feedback'].includes(phase) ? 'cursor-default' : ``}`}
 									style={{
 										borderRadius: 25,
-										minHeight: 50
+										minHeight: 50,
+										transition:
+											phase === 'feedback' && selectedAnswer !== item.key
+												? 'opacity 1s ease 2s'
+												: ''
 									}}
 								>
-									{phase === 'countdown' ? '' : color}
+									{phase === 'countdown'
+										? ''
+										: trivia?.[`answer${item.key.toLocaleUpperCase()}`]}
 								</button>
 							))}
 						</div>
@@ -278,11 +316,17 @@ const Home: NextPage = () => {
 				className='fixed top-0 left-0 right-0 bottom-0'
 				style={{
 					transform:
-						phase === 'countdown' ? 'translateY(0%)' : 'translateY(100%)',
-					transition:
 						phase === 'countdown'
-							? 'transform 1.5s ease 0.8s'
-							: 'transform 60s linear',
+							? 'translateY(0%)'
+							: phase === 'play'
+							? 'translateY(100%)'
+							: 'translateY(101%)',
+					transition:
+						phase === 'play'
+							? 'transform 60s linear'
+							: phase === 'feedback'
+							? 'transform 3s ease'
+							: 'transform 1.5s ease 0.8s',
 					backfaceVisibility: 'hidden'
 				}}
 			>
@@ -306,13 +350,13 @@ const Home: NextPage = () => {
 							xlinkHref='#gentle-wave'
 							x='48'
 							y='0'
-							style={{ fill: '#4ca9b1', opacity: 0.2 }}
+							style={{ fill: waterColor, opacity: 0.2 }}
 						/>
 						<use
 							xlinkHref='#gentle-wave'
 							x='48'
 							y='3'
-							style={{ fill: '#4ca9b1', opacity: 0.3 }}
+							style={{ fill: waterColor, opacity: 0.3 }}
 						/>
 					</g>
 				</svg>
@@ -336,13 +380,17 @@ const Home: NextPage = () => {
 							xlinkHref='#gentle-wave'
 							x='48'
 							y='5'
-							style={{ fill: '#4ca9b1', opacity: 0.05 }}
+							style={{ fill: waterColor, opacity: 0.05 }}
 						/>
 					</g>
 				</svg>
 				<div
-					className='absolute h-full w-full bg-blue-light  overflow-visible z-10 opacity-50 '
-					style={{ top: 40, backfaceVisibility: 'hidden' }}
+					className='absolute h-full w-full overflow-visible z-10 opacity-50'
+					style={{
+						top: 40,
+						backfaceVisibility: 'hidden',
+						backgroundColor: waterColor
+					}}
 				>
 					{bubbles.map(bubble => (
 						<div
@@ -351,9 +399,10 @@ const Home: NextPage = () => {
 							style={{
 								left: bubble.x,
 								bottom: bubble.width,
-								animation: ['countdown', 'play'].includes(phase)
-									? `bubble ${bubble.duration}s linear ${bubble.delay}s infinite`
-									: ''
+								animation:
+									phase !== 'standby'
+										? `bubble ${bubble.duration}s linear ${bubble.delay}s infinite`
+										: ''
 							}}
 						></div>
 					))}
