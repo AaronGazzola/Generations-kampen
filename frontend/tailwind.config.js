@@ -8,7 +8,8 @@ module.exports = {
 					darkest: '#1b8433',
 					dark: '#7ebb55',
 					DEFAULT: '#70b870',
-					light: '#72c371'
+					light: '#72c371',
+					lightest: '#7dba56'
 				},
 				yellow: {
 					light: '#fae94d',
@@ -16,6 +17,7 @@ module.exports = {
 					dark: '#ffc107'
 				},
 				red: {
+					lightest: '#cf3732',
 					light: '#ce3732',
 					dark: '#dc3545',
 					DEFAULT: '#b6504c'

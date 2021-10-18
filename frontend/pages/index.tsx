@@ -23,7 +23,7 @@ const Home: NextPage = () => {
 	const srcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
-		'standby' | 'play' | 'feedback' | 'countdown'
+		'standby' | 'play' | 'feedback' | 'countdown' | 'reset'
 	>('standby');
 	const [seconds, setSeconds] = useState(0);
 	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
@@ -63,7 +63,7 @@ const Home: NextPage = () => {
 			setSeconds(sec);
 			if (sec === 0) {
 				clearInterval(timer);
-				setPhase('feedback');
+				if (phase === 'play') setPhase('feedback');
 			}
 		}, 1000);
 	};
@@ -84,9 +84,18 @@ const Home: NextPage = () => {
 	};
 
 	const answerHandler = (answer: string) => {
+		if (phase !== 'play') return;
 		setPhase('feedback');
 		setSelectedAnswer(answer);
 		videoRef.current?.pause();
+	};
+
+	const resetHandler = () => {
+		setPhase('reset');
+		setGotTrivia(false);
+		setTimeout(() => {
+			setPhase('standby');
+		}, 1000);
 	};
 
 	useEffect(() => {
@@ -141,19 +150,86 @@ const Home: NextPage = () => {
 				videoMetaDataHandler
 			);
 	}, [videoRef.current, buttonBoxRef.current, questionRef.current]);
-	console.log(phase);
 
 	return (
 		<>
 			<Meta />
+			{['feedback', 'reset'].includes(phase) && (
+				<div
+					className='fixed top-0 left-0 right-0 bottom-0 z-20 flex items-center justify-center opacity-0'
+					style={{
+						animation:
+							phase === 'reset'
+								? 'fade-out .5s ease-in-out forwards'
+								: 'fade-in .5s ease-in-out 3s forwards',
+						backgroundColor: 'rgba(0,0,0,0.7)'
+					}}
+				>
+					<div className='sm:p-8 p-4' style={{ width: videoWidth }}>
+						<div className='w-full flex flex-col justify-center'>
+							<h1
+								className={`text-8xl font-semibold italic w-full text-center ${
+									selectedAnswer === trivia?.correctAnswer
+										? 'text-green-lightest'
+										: 'text-red-lightest'
+								}`}
+								style={{ textShadow: '6px 6px rgba(0,0,0,0.8)' }}
+							>
+								{selectedAnswer === trivia?.correctAnswer ? (
+									<>
+										R&Auml;TT
+										<br />
+										SVAR!
+									</>
+								) : (
+									<>
+										FEL
+										<br />
+										SVAR!
+									</>
+								)}
+							</h1>
+							<h2
+								className='text-white italic w-full text-center p-4 font-bold text-2xl'
+								style={{ textShadow: '2px 2px rgba(0,0,0,0.8)' }}
+							>
+								{selectedAnswer === trivia?.correctAnswer ? (
+									'BRA JOBBAT!'
+								) : (
+									<>
+										R&auml;tt svar:
+										<br />
+										{
+											trivia?.[
+												`answer${trivia?.correctAnswer.toLocaleUpperCase()}`
+											]
+										}
+									</>
+								)}
+							</h2>
+							<button
+								onClick={resetHandler}
+								className={`h-12 mb-2 border border-brown-dark italic text-white text-2xl font-bold bg-green-light`}
+								style={{
+									borderRadius: 25,
+									minHeight: 50
+								}}
+							>
+								OK
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 			<div className='fixed top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center overflow-visible z-10'>
 				<div className='w-full h-full max-w-4xl overflow-visible relative'>
 					<div
 						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center'
 						style={{
-							transform:
-								phase === 'standby' ? 'translateX(0%)' : 'translateX(-100%)',
-							opacity: phase === 'standby' ? 1 : 0,
+							transform: ['standby', 'reset'].includes(phase)
+								? 'translateX(0%)'
+								: 'translateX(-100%)',
+							opacity: ['standby', 'reset'].includes(phase) ? 1 : 0,
 							transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
 						}}
 					>
@@ -179,7 +255,9 @@ const Home: NextPage = () => {
 								<div
 									className='absolute top-0 left-0 right-0 bottom-0 opacity-0 origin-center'
 									style={{
-										animation: 'chest-glow 4s ease-in-out .6s infinite'
+										animation: !['feedback', 'play'].includes(phase)
+											? 'chest-glow 4s ease-in-out .6s infinite'
+											: ''
 									}}
 								>
 									<Image src={chestGlow} layout='responsive' />
@@ -187,7 +265,9 @@ const Home: NextPage = () => {
 								<div
 									className='absolute top-0 left-0 right-0 bottom-0 origin-center'
 									style={{
-										animation: 'chest-pulse 2s ease-in-out infinite alternate'
+										animation: !['feedback', 'play'].includes(phase)
+											? 'chest-pulse 2s ease-in-out infinite alternate'
+											: ''
 									}}
 								>
 									<Image src={chestImage} layout='responsive' />
@@ -202,16 +282,20 @@ const Home: NextPage = () => {
 						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-around'
 						style={{
 							maxHeight: 900,
-							transform:
-								phase !== 'standby' ? 'translateX(0%)' : 'translateX(100%)',
-							opacity: phase !== 'standby' ? 1 : 0,
+							transform: !['standby', 'reset'].includes(phase)
+								? 'translateX(0%)'
+								: 'translateX(100%)',
+							opacity: !['standby', 'reset'].includes(phase) ? 1 : 0,
 							transition: 'all .8s cubic-bezier( 0.87, 0, 0.34, 1.02 )'
 						}}
 					>
 						<h1
 							ref={questionRef}
 							className='whitespace-nowrap text-white font-bold italic'
-							style={{ fontSize: '1.2rem' }}
+							style={{
+								fontSize: '1.2rem',
+								opacity: ['standby', 'countdown'].includes(phase) ? 0 : 1
+							}}
 						>
 							{trivia?.question}
 						</h1>
@@ -299,7 +383,7 @@ const Home: NextPage = () => {
 										minHeight: 50,
 										transition:
 											phase === 'feedback' && selectedAnswer !== item.key
-												? 'opacity 1s ease 2s'
+												? 'opacity .5s ease 1.5s'
 												: ''
 									}}
 								>
@@ -345,7 +429,13 @@ const Home: NextPage = () => {
 							d='M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z'
 						/>
 					</defs>
-					<g className='parallax'>
+					<g
+						className={`${
+							['countdown', 'play', 'feedback'].includes(phase)
+								? 'parallax'
+								: ''
+						}`}
+					>
 						<use
 							xlinkHref='#gentle-wave'
 							x='48'
@@ -375,7 +465,13 @@ const Home: NextPage = () => {
 							d='M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z'
 						/>
 					</defs>
-					<g className='parallax'>
+					<g
+						className={`${
+							['countdown', 'play', 'feedback'].includes(phase)
+								? 'parallax'
+								: ''
+						}`}
+					>
 						<use
 							xlinkHref='#gentle-wave'
 							x='48'
