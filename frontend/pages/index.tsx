@@ -23,6 +23,7 @@ interface Bubble {
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
+	const countdownVideoRef = useRef<HTMLVideoElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoSrcRef = useRef<HTMLSourceElement>(null);
 	const audioRef = useRef<HTMLAudioElement>(null);
@@ -175,6 +176,12 @@ const Home: NextPage = () => {
 		}
 	}, [playSound, audioRef]);
 
+	useEffect(() => {
+		if (phase === 'countdown' && seconds === 3) {
+			countdownVideoRef.current?.play();
+		}
+	}, [seconds, phase, countdownVideoRef]);
+
 	return (
 		<>
 			<Meta />
@@ -314,7 +321,6 @@ const Home: NextPage = () => {
 					>
 						<div className='flex flex-col-reverse items-center justify-around w-full h-full'>
 							<button
-								id='starta'
 								onClick={playHandler}
 								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl z-10 tracking-wider ${
 									screenHeight > 800 ? 'sm:text-8xl' : ''
@@ -328,8 +334,12 @@ const Home: NextPage = () => {
 							<div
 								className='relative'
 								style={{
-									width: `clamp(0px, calc(((var(--vh) * 100) - 276px) * 0.905901116427), 540px)`,
-									height: `clamp(0px, calc((var(--vh) * 100) - 276px), 540px)`
+									width: `clamp(0px, calc(((var(--vh) * 100) - ${
+										screenHeight < 400 ? 251 : 276
+									}px) * 0.905901116427), 540px)`,
+									height: `clamp(0px, calc((var(--vh) * 100) - ${
+										screenHeight < 400 ? 251 : 276
+									}px), 540px)`
 								}}
 							>
 								<div
@@ -353,7 +363,10 @@ const Home: NextPage = () => {
 									<Image src={chestImage} layout='responsive' />
 								</div>
 							</div>
-							<div className='w-full' style={{ maxWidth: 640 }}>
+							<div
+								className='w-full'
+								style={{ maxWidth: screenHeight < 400 ? 480 : 640 }}
+							>
 								<Image src={mainTitle} layout='responsive' />
 							</div>
 						</div>
@@ -386,19 +399,19 @@ const Home: NextPage = () => {
 								width: videoWidth
 							}}
 						>
-							{phase === 'countdown' && (
-								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full'>
-									<div className='bg-gray-800 rounded-lg flex items-center justify-center w-full h-full'>
-										<p
-											className='text-white text-2xl font-bold'
-											style={{
-												animation:
-													seconds <= 3 ? 'countdown 1s ease infinite' : ''
-											}}
-										>
-											{seconds <= 3 ? seconds : ''}
-										</p>
-									</div>
+							{['countdown', 'standby'].includes(phase) && (
+								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full bg-black flex items-center rounded-lg'>
+									<video
+										className={`w-full transition-opacity ease-in-out duration-300 ${
+											phase === 'countdown' && seconds > 4 ? 'opacity-0' : ''
+										}`}
+										ref={countdownVideoRef}
+									>
+										<source
+											src='/assets/video/countdown.mp4'
+											type='video/mp4'
+										/>
+									</video>
 								</div>
 							)}
 
