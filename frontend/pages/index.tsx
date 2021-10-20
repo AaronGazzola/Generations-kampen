@@ -23,6 +23,7 @@ interface Bubble {
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
+	const noSleepVideoRef = useRef<HTMLVideoElement>(null);
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoSrcRef = useRef<HTMLSourceElement>(null);
@@ -61,35 +62,29 @@ const Home: NextPage = () => {
 		return arr;
 	};
 
-	const startTriviaTimer = () => {
-		setPhase('question');
-		videoRef?.current?.play();
-		let sec = 60;
-		setSeconds(sec);
-		const timer = setInterval(() => {
-			sec--;
-			setSeconds(sec);
-			if (sec === 0 || phase === 'answer') {
-				clearInterval(timer);
-				if (phase === 'question') setPhase('answer');
-			}
-		}, 1000);
-	};
-
 	const playHandler = () => {
 		setPhase('countdown');
+		setSeconds(5);
 		setBubbles(getBubbles(30));
-		let sec = 6;
-		setSeconds(sec);
-		const timer = setInterval(() => {
-			sec--;
-			setSeconds(sec);
-			if (sec === 0) {
-				clearInterval(timer);
-				startTriviaTimer();
+	};
+
+	useEffect(() => {
+		let timer: NodeJS.Timer;
+		timer = setInterval(() => {
+			if (phase === 'answer') setSeconds(0);
+			if (seconds) {
+				setSeconds(prev => (prev = prev - 1));
+				if (seconds === 3) countdownVideoRef.current?.play();
+			} else if (phase === 'countdown') {
+				setPhase('question');
+				setSeconds(60);
+				videoRef?.current?.play();
+			} else if (phase === 'question') {
+				if (!selectedAnswer) answerHandler('');
 			}
 		}, 1000);
-	};
+		return () => clearInterval(timer);
+	}, [seconds, phase]);
 
 	const answerHandler = (answer: string) => {
 		if (phase !== 'question') return;
@@ -110,6 +105,8 @@ const Home: NextPage = () => {
 	const feedbackHandler = (feedback: 'positive' | 'negative') => {
 		if (trivia) dispatch(submitFeedback({ feedback, id: trivia._id || '' }));
 		setPhase('reset');
+		setShowScrollIcon(true);
+		setSelectedAnswer('');
 		setGotTrivia(false);
 		setTimeout(() => {
 			setPhase('standby');
@@ -177,14 +174,30 @@ const Home: NextPage = () => {
 	}, [playSound, audioRef]);
 
 	useEffect(() => {
-		if (phase === 'countdown' && seconds === 3) {
-			countdownVideoRef.current?.play();
-		}
-	}, [seconds, phase, countdownVideoRef]);
+		const touchHandler = () => {
+			if (phase === 'standby') noSleepVideoRef.current?.play();
+		};
+		document.addEventListener('touchstart', touchHandler);
+		return document.removeEventListener('touchstart', touchHandler);
+	}, [phase, noSleepVideoRef.current]);
+
+	useEffect(() => {
+		if (phase !== 'standby') noSleepVideoRef.current?.pause();
+	}, [phase, noSleepVideoRef.current]);
 
 	return (
 		<>
 			<Meta />
+			<video
+				className='fixed bottom-0 left-0'
+				style={{ width: 1, height: 1, opacity: 0.01 }}
+				muted
+				ref={noSleepVideoRef}
+				autoPlay
+				loop
+			>
+				<source src='/assets/video/countdown.mp4' type='video/mp4' />
+			</video>
 			<audio ref={audioRef}>
 				<source ref={audioSrcRef} type='audio/mp3' />
 			</audio>
@@ -336,7 +349,7 @@ const Home: NextPage = () => {
 								style={{
 									width: `clamp(0px, calc(((var(--vh) * 100) - ${
 										screenHeight < 400 ? 251 : 276
-									}px) * 0.905901116427), 540px)`,
+									}px) * 0.905901116427), 100%)`,
 									height: `clamp(0px, calc((var(--vh) * 100) - ${
 										screenHeight < 400 ? 251 : 276
 									}px), 540px)`
@@ -384,7 +397,7 @@ const Home: NextPage = () => {
 					>
 						<h1
 							ref={questionRef}
-							className='whitespace-nowrap text-white font-bold italic'
+							className='whitespace-nowrap text-white font-bold italic mt-2'
 							style={{
 								fontSize: '1.2rem',
 								opacity: ['standby', 'countdown'].includes(phase) ? 0 : 1
@@ -400,18 +413,20 @@ const Home: NextPage = () => {
 							}}
 						>
 							{['countdown', 'standby'].includes(phase) && (
-								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full bg-black flex items-center rounded-lg'>
-									<video
-										className={`w-full transition-opacity ease-in-out duration-300 ${
-											phase === 'countdown' && seconds > 4 ? 'opacity-0' : ''
-										}`}
-										ref={countdownVideoRef}
-									>
-										<source
-											src='/assets/video/countdown.mp4'
-											type='video/mp4'
-										/>
-									</video>
+								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full p-2'>
+									<div className='bg-black flex items-center rounded-lg w-full h-full'>
+										<video
+											className={`w-full transition-opacity ease-in-out duration-300 ${
+												phase === 'countdown' && seconds > 4 ? 'opacity-0' : ''
+											}`}
+											ref={countdownVideoRef}
+										>
+											<source
+												src='/assets/video/countdown.mp4'
+												type='video/mp4'
+											/>
+										</video>
+									</div>
 								</div>
 							)}
 
@@ -448,7 +463,7 @@ const Home: NextPage = () => {
 							</div>
 						)}
 						<div
-							className='overflow-y-auto py-2 flex flex-col items-center relative'
+							className='overflow-y-auto p-2 flex flex-col items-center relative'
 							style={{ minHeight: 75, width: videoWidth }}
 							ref={buttonBoxRef}
 						>
@@ -466,7 +481,7 @@ const Home: NextPage = () => {
 									} ${
 										phase === 'countdown'
 											? 'opacity-20'
-											: ['answer', 'feedback'].includes(phase) &&
+											: ['answer', 'feedback', 'reset'].includes(phase) &&
 											  selectedAnswer !== item.key
 											? `opacity-0`
 											: ''
@@ -500,7 +515,7 @@ const Home: NextPage = () => {
 						phase === 'countdown'
 							? 'translateY(0%)'
 							: phase === 'question'
-							? 'translateY(100%)'
+							? 'translateY(95%)'
 							: 'translateY(101%)',
 					transition:
 						phase === 'question'

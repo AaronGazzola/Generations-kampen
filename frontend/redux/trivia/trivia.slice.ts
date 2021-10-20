@@ -328,7 +328,6 @@ const triviaSlice = createSlice({
 		});
 		builder.addCase(submitFeedback.fulfilled, (state, action) => {
 			state.loading = false;
-			state.success = 'Feedback submitted';
 		});
 		builder.addCase(submitFeedback.rejected, (state, action) => {
 			state.error = action.payload as string;
