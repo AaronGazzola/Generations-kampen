@@ -22,9 +22,11 @@ interface Bubble {
 
 const Home: NextPage = () => {
 	const dispatch = useAppDispatch();
-	const videoRef = useRef<HTMLVideoElement>(null);
 	const questionRef = useRef<HTMLHeadingElement>(null);
-	const srcRef = useRef<HTMLSourceElement>(null);
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const videoSrcRef = useRef<HTMLSourceElement>(null);
+	const audioRef = useRef<HTMLAudioElement>(null);
+	const audioSrcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'countdown' | 'question' | 'answer' | 'feedback' | 'reset'
@@ -39,6 +41,7 @@ const Home: NextPage = () => {
 	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(true);
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
+	const [playSound, setPlaySound] = useState<boolean>(false);
 	const waterColor = '#228ABF';
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
@@ -92,6 +95,15 @@ const Home: NextPage = () => {
 		setPhase('answer');
 		setSelectedAnswer(answer);
 		videoRef.current?.pause();
+		if (audioSrcRef.current)
+			audioSrcRef.current.src =
+				answer === trivia?.correctAnswer
+					? '/assets/audio/applause.mp3'
+					: '/assets/audio/trombone.mp3';
+		audioRef.current?.load();
+		setTimeout(() => {
+			setPlaySound(true);
+		}, 3000);
 	};
 
 	const feedbackHandler = (feedback: 'positive' | 'negative') => {
@@ -111,8 +123,8 @@ const Home: NextPage = () => {
 	}, [phase, gotTrivia]);
 
 	useEffect(() => {
-		if (triviaTrigger === 'showVideo' && srcRef.current) {
-			srcRef.current.src = `${
+		if (triviaTrigger === 'showVideo' && videoSrcRef.current) {
+			videoSrcRef.current.src = `${
 				process.env.NODE_ENV === 'production'
 					? process.env.NEXT_PUBLIC_BASE_URL_PROD
 					: process.env.NEXT_PUBLIC_BASE_URL_DEV
@@ -156,9 +168,19 @@ const Home: NextPage = () => {
 			);
 	}, [videoRef.current, buttonBoxRef.current, questionRef.current]);
 
+	useEffect(() => {
+		if (playSound) {
+			audioRef.current?.play();
+			setPlaySound(false);
+		}
+	}, [playSound, audioRef]);
+
 	return (
 		<>
 			<Meta />
+			<audio ref={audioRef}>
+				<source ref={audioSrcRef} type='audio/mp3' />
+			</audio>
 			{['answer', 'feedback', 'reset'].includes(phase) && (
 				<div
 					className='fixed top-0 left-0 right-0 bottom-0 z-20 flex items-center justify-center opacity-0'
@@ -170,6 +192,18 @@ const Home: NextPage = () => {
 						backgroundColor: 'rgba(0,0,0,0.7)'
 					}}
 				>
+					{selectedAnswer === trivia?.correctAnswer &&
+						['answer', 'feedback'].includes(phase) && (
+							<div
+								className={`absolute top-0 left-0 right-0 bottom-0 transition-opacity ease-in-out duration-300 ${
+									phase === 'feedback' ? 'opacity-0' : ''
+								}`}
+							>
+								{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+									<div key={num} className='confetti'></div>
+								))}
+							</div>
+						)}
 					{phase === 'feedback' && (
 						<div
 							className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10  w-full max-w-xs p-4'
@@ -206,7 +240,7 @@ const Home: NextPage = () => {
 						</div>
 					)}
 					<div
-						className={`sm:p-8 p-4 transition-opacity ease-in-out .5s ${
+						className={`sm:p-8 p-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity ease-in-out .5s ${
 							['feedback', 'reset'].includes(phase) ? 'opacity-0' : ''
 						}`}
 						style={{ width: videoWidth }}
@@ -280,6 +314,7 @@ const Home: NextPage = () => {
 					>
 						<div className='flex flex-col-reverse items-center justify-around w-full h-full'>
 							<button
+								id='starta'
 								onClick={playHandler}
 								className={`rounded-md bg-brown-dark text-yellow-dark text-6xl z-10 tracking-wider ${
 									screenHeight > 800 ? 'sm:text-8xl' : ''
@@ -378,7 +413,7 @@ const Home: NextPage = () => {
 										: videoRef.current?.pause()
 								}
 							>
-								<source ref={srcRef} type='video/mp4' />
+								<source ref={videoSrcRef} type='video/mp4' />
 							</video>
 						</div>
 						{phase === 'question' && showScrollIcon && (
