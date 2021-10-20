@@ -44,4 +44,11 @@ export class TriviaController {
   getTrivia(@Body() { pastTrivia }: { pastTrivia: string[] }) {
     return this.triviaService.getTrivia(pastTrivia);
   }
+
+  @Post('/feedback')
+  submitFeedback(
+    @Body() { feedback, id }: { feedback: 'negative' | 'positive'; id: string },
+  ) {
+    return this.triviaService.submitFeedback({ feedback, id });
+  }
 }

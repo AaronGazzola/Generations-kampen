@@ -7,7 +7,7 @@ export const TriviaSchema = new mongoose.Schema({
   answerC: String,
   answerD: String,
   correctAnswer: String,
-  feeback: {
+  feedback: {
     positive: Number,
     negative: Number,
   },

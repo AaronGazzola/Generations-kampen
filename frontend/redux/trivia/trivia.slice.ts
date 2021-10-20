@@ -196,6 +196,29 @@ export const deleteTrivia = createAsyncThunk(
 	}
 );
 
+export const submitFeedback = createAsyncThunk(
+	'trivia/submitFeedback',
+	async (
+		{ feedback, id }: { feedback: string; id: string },
+		{ rejectWithValue, getState }
+	) => {
+		try {
+			const { data }: TriviaResponse = await axios.post(
+				`${baseUrl}/api/trivia/feedback`,
+				{ feedback, id },
+				config
+			);
+			return data;
+		} catch (error: any) {
+			return rejectWithValue(
+				error.response && error.response.data.message
+					? error.response.data.message
+					: error.message
+			);
+		}
+	}
+);
+
 const initialState: TriviaState = {
 	loading: false
 };
@@ -297,6 +320,17 @@ const triviaSlice = createSlice({
 			);
 		});
 		builder.addCase(getTrivia.rejected, (state, action) => {
+			state.error = action.payload as string;
+			state.loading = false;
+		});
+		builder.addCase(submitFeedback.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(submitFeedback.fulfilled, (state, action) => {
+			state.loading = false;
+			state.success = 'Feedback submitted';
+		});
+		builder.addCase(submitFeedback.rejected, (state, action) => {
 			state.error = action.payload as string;
 			state.loading = false;
 		});

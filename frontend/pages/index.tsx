@@ -3,7 +3,11 @@ import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { clearTriviaTrigger, getTrivia } from '../redux/trivia/trivia.slice';
+import {
+	clearTriviaTrigger,
+	getTrivia,
+	submitFeedback
+} from '../redux/trivia/trivia.slice';
 import mainTitle from '../public/assets/images/main_title.png';
 import chestImage from '../public/assets/images/chest.png';
 import chestGlow from '../public/assets/images/chest_glow.png';
@@ -23,7 +27,7 @@ const Home: NextPage = () => {
 	const srcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
-		'standby' | 'play' | 'feedback' | 'countdown' | 'reset'
+		'standby' | 'countdown' | 'question' | 'answer' | 'feedback' | 'reset'
 	>('standby');
 	const [seconds, setSeconds] = useState(0);
 	const { screenWidth, screenHeight } = useAppSelector(state => state.utils);
@@ -54,16 +58,16 @@ const Home: NextPage = () => {
 	};
 
 	const startTriviaTimer = () => {
-		setPhase('play');
+		setPhase('question');
 		videoRef?.current?.play();
 		let sec = 60;
 		setSeconds(sec);
 		const timer = setInterval(() => {
 			sec--;
 			setSeconds(sec);
-			if (sec === 0) {
+			if (sec === 0 || phase === 'answer') {
 				clearInterval(timer);
-				if (phase === 'play') setPhase('feedback');
+				if (phase === 'question') setPhase('answer');
 			}
 		}, 1000);
 	};
@@ -84,13 +88,14 @@ const Home: NextPage = () => {
 	};
 
 	const answerHandler = (answer: string) => {
-		if (phase !== 'play') return;
-		setPhase('feedback');
+		if (phase !== 'question') return;
+		setPhase('answer');
 		setSelectedAnswer(answer);
 		videoRef.current?.pause();
 	};
 
-	const resetHandler = () => {
+	const feedbackHandler = (feedback: 'positive' | 'negative') => {
+		if (trivia) dispatch(submitFeedback({ feedback, id: trivia._id || '' }));
 		setPhase('reset');
 		setGotTrivia(false);
 		setTimeout(() => {
@@ -119,7 +124,7 @@ const Home: NextPage = () => {
 
 	useEffect(() => {
 		if (
-			phase === 'play' &&
+			phase === 'question' &&
 			((buttonBoxRef.current?.scrollTop &&
 				buttonBoxRef.current?.scrollTop > 0) ||
 				buttonBoxRef.current?.offsetHeight ===
@@ -154,7 +159,7 @@ const Home: NextPage = () => {
 	return (
 		<>
 			<Meta />
-			{['feedback', 'reset'].includes(phase) && (
+			{['answer', 'feedback', 'reset'].includes(phase) && (
 				<div
 					className='fixed top-0 left-0 right-0 bottom-0 z-20 flex items-center justify-center opacity-0'
 					style={{
@@ -165,7 +170,47 @@ const Home: NextPage = () => {
 						backgroundColor: 'rgba(0,0,0,0.7)'
 					}}
 				>
-					<div className='sm:p-8 p-4' style={{ width: videoWidth }}>
+					{phase === 'feedback' && (
+						<div
+							className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10  w-full max-w-xs p-4'
+							style={{ animation: 'fade-in .5s forwards' }}
+						>
+							<div className='pb-5 pt-6 px-6  rounded-lg bg-brown flex flex-col items-center w-full h-full'>
+								<h2 className='text-white italic w-full text-center mb-6 font-bold text-2xl'>
+									Vad tycker om du om fr&aring;gan?
+								</h2>
+								<div className='flex w-full'>
+									<button
+										onClick={() => feedbackHandler('positive')}
+										className={`border border-brown-dark italic text-white text-2xl font-bold bg-green-light flex-grow`}
+										style={{
+											borderRadius: 20,
+											height: 40
+										}}
+									>
+										Bra
+									</button>
+									<div className='w-5'></div>
+									<button
+										onClick={() => feedbackHandler('negative')}
+										className={`border border-brown-dark italic text-white text-2xl font-bold bg-red-lightest flex-grow`}
+										style={{
+											borderRadius: 20,
+											height: 40
+										}}
+									>
+										D&Aring;lig
+									</button>
+								</div>
+							</div>
+						</div>
+					)}
+					<div
+						className={`sm:p-8 p-4 transition-opacity ease-in-out .5s ${
+							['feedback', 'reset'].includes(phase) ? 'opacity-0' : ''
+						}`}
+						style={{ width: videoWidth }}
+					>
 						<div className='w-full flex flex-col justify-center'>
 							<h1
 								className={`text-8xl font-semibold italic w-full text-center ${
@@ -208,8 +253,8 @@ const Home: NextPage = () => {
 								)}
 							</h2>
 							<button
-								onClick={resetHandler}
-								className={`h-12 mb-2 border border-brown-dark italic text-white text-2xl font-bold bg-green-light`}
+								onClick={() => setPhase('feedback')}
+								className={`h-12 border border-brown-dark italic text-white text-2xl font-bold bg-green-light`}
 								style={{
 									borderRadius: 25,
 									minHeight: 50
@@ -255,7 +300,7 @@ const Home: NextPage = () => {
 								<div
 									className='absolute top-0 left-0 right-0 bottom-0 opacity-0 origin-center'
 									style={{
-										animation: !['feedback', 'play'].includes(phase)
+										animation: !['answer', 'question'].includes(phase)
 											? 'chest-glow 4s ease-in-out .6s infinite'
 											: ''
 									}}
@@ -265,7 +310,7 @@ const Home: NextPage = () => {
 								<div
 									className='absolute top-0 left-0 right-0 bottom-0 origin-center'
 									style={{
-										animation: !['feedback', 'play'].includes(phase)
+										animation: !['answer', 'question'].includes(phase)
 											? 'chest-pulse 2s ease-in-out infinite alternate'
 											: ''
 									}}
@@ -336,7 +381,7 @@ const Home: NextPage = () => {
 								<source ref={srcRef} type='video/mp4' />
 							</video>
 						</div>
-						{phase === 'play' && showScrollIcon && (
+						{phase === 'question' && showScrollIcon && (
 							<div
 								className='fixed bottom-0 left-1/2 transform -translate-x-1/2 z-10 overflow-x-visible'
 								style={{ width: videoWidth, height: 0 }}
@@ -368,28 +413,32 @@ const Home: NextPage = () => {
 								<button
 									key={item.key}
 									onClick={() => answerHandler(item.key)}
-									className={`w-full h-12 mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${
+									className={`w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${
 										item.color
 									} ${
 										phase === 'countdown'
 											? 'opacity-20'
-											: phase === 'feedback' && selectedAnswer !== item.key
+											: ['answer', 'feedback'].includes(phase) &&
+											  selectedAnswer !== item.key
 											? `opacity-0`
 											: ''
 									}
-									${['countdown', 'feedback'].includes(phase) ? 'cursor-default' : ``}`}
+									${['countdown', 'answer', 'feedback'].includes(phase) ? 'cursor-default' : ``}`}
 									style={{
 										borderRadius: 25,
-										minHeight: 50,
+										padding: '11px 8px',
+										// minHeight: 50,
 										transition:
-											phase === 'feedback' && selectedAnswer !== item.key
+											phase === 'answer' && selectedAnswer !== item.key
 												? 'opacity .5s ease 1.5s'
 												: ''
 									}}
 								>
-									{phase === 'countdown'
-										? ''
-										: trivia?.[`answer${item.key.toLocaleUpperCase()}`]}
+									<span
+										className={`${phase === 'countdown' ? 'opacity-0' : ''}`}
+									>
+										{trivia?.[`answer${item.key.toLocaleUpperCase()}`]}
+									</span>
 								</button>
 							))}
 						</div>
@@ -402,13 +451,13 @@ const Home: NextPage = () => {
 					transform:
 						phase === 'countdown'
 							? 'translateY(0%)'
-							: phase === 'play'
+							: phase === 'question'
 							? 'translateY(100%)'
 							: 'translateY(101%)',
 					transition:
-						phase === 'play'
+						phase === 'question'
 							? 'transform 60s linear'
-							: phase === 'feedback'
+							: phase === 'answer'
 							? 'transform 3s ease'
 							: 'transform 1.5s ease 0.8s',
 					backfaceVisibility: 'hidden'
@@ -431,7 +480,7 @@ const Home: NextPage = () => {
 					</defs>
 					<g
 						className={`${
-							['countdown', 'play', 'feedback'].includes(phase)
+							['countdown', 'question', 'answer'].includes(phase)
 								? 'parallax'
 								: ''
 						}`}
@@ -467,7 +516,7 @@ const Home: NextPage = () => {
 					</defs>
 					<g
 						className={`${
-							['countdown', 'play', 'feedback'].includes(phase)
+							['countdown', 'question', 'answer'].includes(phase)
 								? 'parallax'
 								: ''
 						}`}

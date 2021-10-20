@@ -105,4 +105,24 @@ export class TriviaService {
       };
     }
   }
+
+  async submitFeedback({
+    feedback,
+    id,
+  }: {
+    feedback: 'negative' | 'positive';
+    id: string;
+  }) {
+    const trivia = await this.triviaModel.findById(id);
+    if (!trivia.feedback.positive) {
+      const zeroFeedback = { positive: 0, negative: 0 };
+      trivia.feedback = { ...zeroFeedback, [feedback]: 1 };
+    } else {
+      trivia.feedback[feedback]++;
+    }
+    await trivia.save();
+    return {
+      success: true,
+    };
+  }
 }
