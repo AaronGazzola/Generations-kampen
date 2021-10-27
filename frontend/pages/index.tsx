@@ -475,15 +475,15 @@ const Home: NextPage = () => {
 							ref={buttonBoxRef}
 						>
 							{[
-								{ key: 'a', color: 'blue' },
-								{ key: 'b', color: 'red' },
-								{ key: 'c', color: 'green' },
-								{ key: 'd', color: 'yellow' }
+								{ key: 'a', color: 'bg-blue' },
+								{ key: 'b', color: 'bg-red' },
+								{ key: 'c', color: 'bg-green' },
+								{ key: 'd', color: 'bg-yellow' }
 							].map(item => (
 								<button
 									key={item.key}
 									onClick={() => answerHandler(item.key)}
-									className={`w-full mb-2 border border-brown-dark italic text-white text-xl font-bold bg-${
+									className={`w-full mb-2 border border-brown-dark italic text-white text-xl font-bold ${
 										item.color
 									} ${
 										phase === 'countdown'

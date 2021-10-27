@@ -220,7 +220,11 @@ const Admin = () => {
 					{id && showVideo && (
 						<video className='w-full rounded-md' preload='auto' controls>
 							<source
-								src={`http://localhost:5000/api/videos/${id}`}
+								src={`${
+									process.env.NODE_ENV === 'production'
+										? process.env.NEXT_PUBLIC_BASE_URL_PROD
+										: process.env.NEXT_PUBLIC_BASE_URL_DEV
+								}/api/videos/${id}`}
 								type='video/mp4'
 							/>
 						</video>
@@ -313,14 +317,14 @@ const Admin = () => {
 						onClick={() => {
 							setFormState(initialState), setShowFileInput(false);
 						}}
-						className='mt-2 text-yellow-700 text-gray-800 font-semibold text-sm'
+						className='mt-2 text-yellow-700 font-semibold text-sm'
 					>
 						Clear form
 					</button>
 					<button
 						type='button'
 						onClick={() => dispatch(logout())}
-						className='mt-2 text-red-900 text-gray-800 font-semibold text-sm'
+						className='mt-2 text-red-900 font-semibold text-sm'
 					>
 						Log out
 					</button>
