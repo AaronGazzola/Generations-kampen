@@ -42,14 +42,15 @@ const Index = () => {
 		<>
 			<div className='p-2 h-screen'>
 				<form
-					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'
-					style={{ background: 'rgba(255,255,255,0.7)' }}
+					className='w-screen max-w-sm p-2 rounded-md flex flex-col items-center mt-4 bg-gray-200'
 					onSubmit={submitHandler}
 				>
-					<h1 className='font-medium text-lg mb-2'>Forgot password</h1>
+					<h1 className='font-bold text-3xl mb-2 text-blue-dark'>
+						Forgot password
+					</h1>
 					<label
 						htmlFor='email'
-						className={`w-full pl-1 text-sm font-medium ${
+						className={`w-full pl-1 text-sm  text-gray-800 font-semibold ${
 							email.isTouched && !email.isValid ? 'text-red-700' : ''
 						}`}
 					>
@@ -79,7 +80,7 @@ const Index = () => {
 					>
 						{loading ? '...' : 'Send reset email'}
 					</button>
-					<Link href='/login'>
+					<Link href='/login' passHref>
 						<button
 							type='button'
 							className='mt-2 text-blue-900 font-medium text-sm'

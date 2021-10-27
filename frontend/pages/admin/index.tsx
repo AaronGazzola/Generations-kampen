@@ -184,7 +184,7 @@ const Admin = () => {
 			dispatch(getAllTrivia());
 			setShowVideo(false);
 		}
-	}, [trigger]);
+	}, [trigger, dispatch, trivia?._id, video]);
 
 	useEffect(() => {
 		if (isAuth) dispatch(getAllTrivia());
@@ -206,11 +206,10 @@ const Admin = () => {
 		<>
 			<div className='p-2'>
 				<form
-					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center mt-4'
-					style={{ background: 'rgba(255,255,255,0.7)' }}
+					className='w-screen max-w-lg p-2 rounded-md flex flex-col items-center mt-4 bg-gray-200'
 					onSubmit={submitHandler}
 				>
-					<h1 className='font-medium text-2xl mb-2'>
+					<h1 className='font-bold text-3xl mb-2 text-blue-dark'>
 						{id ? 'Edit trivia' : 'Add trivia'}
 					</h1>
 					{id && (
@@ -240,7 +239,7 @@ const Admin = () => {
 							<React.Fragment key={key}>
 								<label
 									htmlFor={key}
-									className={`w-full pl-1 text-sm font-medium ${
+									className={`w-full pl-1 text-sm text-gray-800 font-semibold ${
 										formState[key].isTouched && !formState[key].isValid
 											? 'text-red-700'
 											: ''
@@ -261,7 +260,6 @@ const Admin = () => {
 											? ' border-red-700'
 											: 'border-transparent'
 									}`}
-									style={{ background: 'rgba(255,255,255,0.7)' }}
 									value={formState[key].value}
 									onChange={changeHandler}
 									onBlur={touchHandler}
@@ -277,7 +275,9 @@ const Admin = () => {
 							</React.Fragment>
 						);
 					})}
-					<h2 className={`text-sm font-medium`}>Correct answer:</h2>
+					<h2 className={`text-sm text-gray-800 font-semibold`}>
+						Correct answer:
+					</h2>
 					<div className='flex w-full justify-around items-center'>
 						{['A', 'B', 'C', 'D'].map(item => (
 							<div className='flex cursor-pointer items-center mt-1' key={item}>
@@ -290,7 +290,7 @@ const Admin = () => {
 									checked={correctAnswer === item.toLocaleLowerCase()}
 								/>
 								<label
-									className={`text-sm font-medium p-1 cursor-pointer`}
+									className={`text-sm text-gray-800 font-semibold p-1 cursor-pointer`}
 									htmlFor={`${item.toLocaleLowerCase()}correct`}
 								>
 									{item}
@@ -313,23 +313,23 @@ const Admin = () => {
 						onClick={() => {
 							setFormState(initialState), setShowFileInput(false);
 						}}
-						className='mt-2 text-yellow-700 font-medium text-sm'
+						className='mt-2 text-yellow-700 text-gray-800 font-semibold text-sm'
 					>
 						Clear form
 					</button>
 					<button
 						type='button'
 						onClick={() => dispatch(logout())}
-						className='mt-2 text-red-900 font-medium text-sm'
+						className='mt-2 text-red-900 text-gray-800 font-semibold text-sm'
 					>
 						Log out
 					</button>
 				</form>
-				<div
-					className='w-screen max-w-lg p-2 rounded-sm flex flex-col items-center my-4'
-					style={{ background: 'rgba(255,255,255,0.7)' }}
-				>
-					<label htmlFor='search' className={`w-full pl-1 text-sm font-medium`}>
+				<div className='w-screen max-w-lg p-2 rounded-md flex flex-col items-center my-4 bg-gray-200'>
+					<label
+						htmlFor='search'
+						className={`w-full pl-1 text-sm text-gray-800 font-semibold`}
+					>
 						Search
 					</label>
 					<input
@@ -344,8 +344,7 @@ const Admin = () => {
 				{displayTrivia?.map(triv => (
 					<div
 						key={triv._id}
-						className='w-screen max-w-lg p-2 rounded-sm flex flex-col mb-4'
-						style={{ background: 'rgba(255,255,255,0.7)' }}
+						className='w-screen max-w-lg p-2 rounded-md flex flex-col mb-4 bg-gray-200'
 					>
 						<p>
 							<span className='font-semibold'>ID: </span>
@@ -376,13 +375,25 @@ const Admin = () => {
 							{triv.correctAnswer}
 						</p>
 						{triv.feedback && (
-							<p>
-								<span className='font-semibold'>Feedback: </span>
-								{(triv.feedback?.positive /
-									(triv.feedback?.negative + triv.feedback?.positive)) *
-									100}
-								% positive
-							</p>
+							<>
+								<p>
+									<span className='font-semibold'>Positive feedback: </span>
+									{triv.feedback?.positive}
+								</p>
+								<p>
+									<span className='font-semibold'>Negative feedback: </span>
+									{triv.feedback?.negative}
+								</p>
+								<p>
+									<span className='font-semibold'>Rating: </span>
+									{Math.floor(
+										(triv.feedback?.positive /
+											(triv.feedback?.negative + triv.feedback?.positive)) *
+											100
+									)}
+									% positive
+								</p>
+							</>
 						)}
 						<div className='flex justify-around'>
 							<button
@@ -391,13 +402,13 @@ const Admin = () => {
 									setShowVideo(false);
 									editTriviaButtonHandler(triv);
 								}}
-								className='mt-2 text-yellow-700 font-medium'
+								className='mt-2 text-yellow-700 font-semibold'
 							>
 								Edit
 							</button>
 							<button
 								type='button'
-								className='mt-2 text-red-900 font-medium'
+								className='mt-2 text-red-900 font-semibold'
 								onClick={() => setConfirmDeleteId(triv._id || '')}
 							>
 								Delete

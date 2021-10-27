@@ -62,20 +62,19 @@ const Login = () => {
 
 	useEffect(() => {
 		dispatch(getUser());
-	}, []);
+	}, [dispatch]);
 
 	return (
 		<>
 			<div className='p-2 h-screen'>
 				<form
-					className='w-screen max-w-sm p-2 rounded-sm flex flex-col items-center mt-4'
-					style={{ background: 'rgba(255,255,255,0.7)' }}
+					className='w-screen max-w-sm p-2 rounded-md flex flex-col items-center mt-4 bg-gray-200'
 					onSubmit={submitHandler}
 				>
-					<h1 className='font-medium text-lg mb-2'>Log in</h1>
+					<h1 className='font-bold text-3xl mb-2 text-blue-dark'>Log in</h1>
 					<label
 						htmlFor='email'
-						className={`w-full pl-1 text-sm font-medium ${
+						className={`w-full pl-1 text-sm text-gray-800 font-semibold ${
 							email.isTouched && !email.isValid ? 'text-red-700' : ''
 						}`}
 					>
@@ -89,7 +88,7 @@ const Login = () => {
 								? ' border-red-700'
 								: 'border-transparent'
 						}`}
-						style={{ background: 'rgba(255,255,255,0.7)' }}
+						style={{ background: 'rgba(255,255,255,0.9)' }}
 						value={email.value}
 						onChange={changeHandler}
 						onBlur={touchHandler}
@@ -97,7 +96,7 @@ const Login = () => {
 					/>
 					<label
 						htmlFor='password'
-						className={`w-full pl-1 text-sm font-medium ${
+						className={`w-full pl-1 text-sm text-gray-800 font-semibold  ${
 							password.isTouched && !password.isValid ? 'text-red-700' : ''
 						}`}
 					>
@@ -111,7 +110,7 @@ const Login = () => {
 								? 'border-red-700'
 								: 'border-transparent'
 						}`}
-						style={{ background: 'rgba(255,255,255,0.7)' }}
+						style={{ background: 'rgba(255,255,255,0.9)' }}
 						value={password.value}
 						onChange={changeHandler}
 						onBlur={touchHandler}
@@ -127,7 +126,7 @@ const Login = () => {
 					>
 						{loading ? '...' : 'Log in'}
 					</button>
-					<Link href='/forgot-password'>
+					<Link href='/forgot-password' passHref>
 						<button
 							type='button'
 							className='mt-2 text-blue-900 font-medium text-sm'

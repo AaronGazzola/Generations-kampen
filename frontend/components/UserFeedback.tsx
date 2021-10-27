@@ -28,7 +28,7 @@ const UserFeedback = () => {
 			}, 3000);
 		}
 		return () => clearTimeout(timer);
-	}, [success, error, alert]);
+	}, [success, error, alert, dispatch]);
 
 	if (error || success || alert) {
 		return (

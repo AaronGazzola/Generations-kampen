@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Image from 'next/image';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import {
@@ -52,7 +52,7 @@ const Home: NextPage = () => {
 		};
 		for (let i = 0; i < screenWidth / density; i++) {
 			arr.push({
-				width: getRandomInteger(2, 10),
+				width: getRandomInteger(8, 40),
 				delay: getRandomInteger(0, 5),
 				duration: getRandomInteger(5, 15),
 				x: getRandomInteger(0, screenWidth),
@@ -67,6 +67,25 @@ const Home: NextPage = () => {
 		setSeconds(5);
 		setBubbles(getBubbles(30));
 	};
+
+	const answerHandler = useCallback(
+		(answer: string) => {
+			if (phase !== 'question') return;
+			setPhase('answer');
+			setSelectedAnswer(answer);
+			videoRef.current?.pause();
+			if (audioSrcRef.current)
+				audioSrcRef.current.src =
+					answer === trivia?.correctAnswer
+						? '/assets/audio/applause.mp3'
+						: '/assets/audio/trombone.mp3';
+			audioRef.current?.load();
+			setTimeout(() => {
+				setPlaySound(true);
+			}, 3000);
+		},
+		[phase, trivia?.correctAnswer]
+	);
 
 	useEffect(() => {
 		let timer: NodeJS.Timer;
@@ -84,23 +103,7 @@ const Home: NextPage = () => {
 			}
 		}, 1000);
 		return () => clearInterval(timer);
-	}, [seconds, phase]);
-
-	const answerHandler = (answer: string) => {
-		if (phase !== 'question') return;
-		setPhase('answer');
-		setSelectedAnswer(answer);
-		videoRef.current?.pause();
-		if (audioSrcRef.current)
-			audioSrcRef.current.src =
-				answer === trivia?.correctAnswer
-					? '/assets/audio/applause.mp3'
-					: '/assets/audio/trombone.mp3';
-		audioRef.current?.load();
-		setTimeout(() => {
-			setPlaySound(true);
-		}, 3000);
-	};
+	}, [seconds, phase, answerHandler, selectedAnswer]);
 
 	const feedbackHandler = (feedback: 'positive' | 'negative') => {
 		if (trivia) dispatch(submitFeedback({ feedback, id: trivia._id || '' }));
@@ -118,7 +121,7 @@ const Home: NextPage = () => {
 			dispatch(getTrivia());
 			setGotTrivia(true);
 		}
-	}, [phase, gotTrivia]);
+	}, [phase, gotTrivia, dispatch]);
 
 	useEffect(() => {
 		if (triviaTrigger === 'showVideo' && videoSrcRef.current) {
@@ -130,7 +133,7 @@ const Home: NextPage = () => {
 			videoRef.current?.load();
 			dispatch(clearTriviaTrigger());
 		}
-	}, [triviaTrigger]);
+	}, [triviaTrigger, dispatch, trivia?._id]);
 
 	useEffect(() => {
 		if (
@@ -141,30 +144,26 @@ const Home: NextPage = () => {
 					buttonBoxRef.current?.scrollHeight)
 		)
 			setShowScrollIcon(false);
-	}, [buttonBoxRef.current?.scrollTop, buttonBoxRef.current, phase]);
+	}, [buttonBoxRef.current?.scrollTop, phase]);
 
 	useEffect(() => {
+		const vidRef = videoRef.current;
 		const videoMetaDataHandler = () => {
-			if (buttonBoxRef.current && videoRef.current && questionRef.current)
+			if (buttonBoxRef.current && vidRef && questionRef.current)
 				setVideoWidth(
 					`clamp(280px, 100%, calc(((var(--vh) * 100) - ${
 						questionRef.current.offsetHeight
 					}px - ${
 						screenHeight > 580 ? buttonBoxRef.current?.scrollHeight + 16 : 178
-					}px)) * ${
-						videoRef.current?.videoWidth / videoRef.current?.videoHeight
-					})`
+					}px)) * ${vidRef?.videoWidth / vidRef?.videoHeight})`
 				);
 		};
-		if (videoRef.current) {
-			videoRef.current.addEventListener('loadedmetadata', videoMetaDataHandler);
+		if (vidRef) {
+			vidRef.addEventListener('loadedmetadata', videoMetaDataHandler);
 		}
 		return () =>
-			videoRef.current?.removeEventListener(
-				'loadedmetadata',
-				videoMetaDataHandler
-			);
-	}, [videoRef.current, buttonBoxRef.current, questionRef.current]);
+			vidRef?.removeEventListener('loadedmetadata', videoMetaDataHandler);
+	}, [screenHeight]);
 
 	useEffect(() => {
 		if (playSound) {
@@ -179,11 +178,11 @@ const Home: NextPage = () => {
 		};
 		document.addEventListener('touchstart', touchHandler);
 		return document.removeEventListener('touchstart', touchHandler);
-	}, [phase, noSleepVideoRef.current]);
+	}, [phase]);
 
 	useEffect(() => {
 		if (phase !== 'standby') noSleepVideoRef.current?.pause();
-	}, [phase, noSleepVideoRef.current]);
+	}, [phase]);
 
 	return (
 		<>
@@ -363,7 +362,11 @@ const Home: NextPage = () => {
 											: ''
 									}}
 								>
-									<Image src={chestGlow} layout='responsive' />
+									<Image
+										src={chestGlow}
+										layout='responsive'
+										alt='animated glow behind chest'
+									/>
 								</div>
 								<div
 									className='absolute top-0 left-0 right-0 bottom-0 origin-center'
@@ -373,14 +376,18 @@ const Home: NextPage = () => {
 											: ''
 									}}
 								>
-									<Image src={chestImage} layout='responsive' />
+									<Image
+										src={chestImage}
+										layout='responsive'
+										alt='Animated chest with blue orb'
+									/>
 								</div>
 							</div>
 							<div
 								className='w-full'
 								style={{ maxWidth: screenHeight < 400 ? 480 : 640 }}
 							>
-								<Image src={mainTitle} layout='responsive' />
+								<Image alt='UTMANINGEN' src={mainTitle} layout='responsive' />
 							</div>
 						</div>
 					</div>
@@ -603,8 +610,10 @@ const Home: NextPage = () => {
 					{bubbles.map(bubble => (
 						<div
 							key={bubble.key}
-							className={`absolute border border-white  w-${bubble.width} h-${bubble.width} rounded-full`}
+							className={`absolute border border-white rounded-full`}
 							style={{
+								width: bubble.width,
+								height: bubble.width,
 								left: bubble.x,
 								bottom: bubble.width,
 								animation:
