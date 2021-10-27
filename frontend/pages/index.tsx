@@ -349,7 +349,7 @@ const Home: NextPage = () => {
 								style={{
 									width: `clamp(0px, calc(((var(--vh) * 100) - ${
 										screenHeight < 400 ? 251 : 276
-									}px) * 0.905901116427), 100%)`,
+									}px) * 0.905901116427), ${540 * 0.905901116427}px)`,
 									height: `clamp(0px, calc((var(--vh) * 100) - ${
 										screenHeight < 400 ? 251 : 276
 									}px), 540px)`
@@ -387,7 +387,7 @@ const Home: NextPage = () => {
 					<div
 						className='absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-around'
 						style={{
-							maxHeight: 900,
+							// maxHeight: 900,
 							transform: !['standby', 'reset'].includes(phase)
 								? 'translateX(0%)'
 								: 'translateX(100%)',
