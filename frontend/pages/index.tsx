@@ -1,4 +1,5 @@
 import type { NextPage } from 'next';
+import enableInlineVideo from 'iphone-inline-video';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
@@ -30,6 +31,7 @@ const Home: NextPage = () => {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const audioSrcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
+	const textTimerRef = useRef<HTMLDivElement>(null);
 	const [phase, setPhase] = useState<
 		'standby' | 'countdown' | 'question' | 'answer' | 'feedback' | 'reset'
 	>('standby');
@@ -133,6 +135,8 @@ const Home: NextPage = () => {
 					: process.env.NEXT_PUBLIC_BASE_URL_DEV
 			}/api/videos/${trivia?._id}`;
 			videoRef.current?.load();
+			enableInlineVideo(videoRef.current);
+			enableInlineVideo(countdownVideoRef.current);
 			dispatch(clearTriviaTrigger());
 		}
 	}, [triviaTrigger, dispatch, trivia?._id]);
@@ -151,10 +155,15 @@ const Home: NextPage = () => {
 	useEffect(() => {
 		const vidRef = videoRef.current;
 		const videoMetaDataHandler = () => {
-			if (buttonBoxRef.current && vidRef && questionRef.current)
+			if (
+				buttonBoxRef.current &&
+				vidRef &&
+				questionRef.current &&
+				textTimerRef.current
+			)
 				setVideoWidth(
 					`clamp(280px, 100%, calc(((var(--vh) * 100) - ${
-						questionRef.current.offsetHeight
+						questionRef.current.offsetHeight - textTimerRef.current.offsetHeight
 					}px - ${
 						screenHeight > 580 ? buttonBoxRef.current?.scrollHeight + 16 : 178
 					}px)) * ${vidRef?.videoWidth / vidRef?.videoHeight})`
@@ -209,12 +218,14 @@ const Home: NextPage = () => {
 		<>
 			<Meta />
 			<video
+				playsInline
 				className='fixed bottom-0 left-0'
 				style={{ width: 1, height: 1, opacity: 0.01 }}
 				muted
 				ref={noSleepVideoRef}
 				autoPlay
 				loop
+				controls={false}
 			>
 				<source src='/assets/video/countdown.mp4' type='video/mp4' />
 			</video>
@@ -362,7 +373,7 @@ const Home: NextPage = () => {
 									fontFamily: "'Londrina Solid', sans-serif"
 								}}
 							>
-								{mediaIsReady ? (
+								{mediaIsReady || phase === 'countdown' ? (
 									'STARTA'
 								) : (
 									<svg
@@ -462,7 +473,10 @@ const Home: NextPage = () => {
 											className={`w-full transition-opacity ease-in-out duration-300 ${
 												phase === 'countdown' && seconds > 4 ? 'opacity-0' : ''
 											}`}
+											playsInline
 											ref={countdownVideoRef}
+											controls={false}
+											autoPlay={false}
 										>
 											<source
 												src='/assets/video/countdown.mp4'
@@ -477,15 +491,46 @@ const Home: NextPage = () => {
 								ref={videoRef}
 								className='w-full rounded-lg'
 								loop
+								controls={false}
 								preload='auto'
 								onClick={() =>
 									videoRef.current?.paused
 										? videoRef.current?.play()
 										: videoRef.current?.pause()
 								}
+								autoPlay={false}
+								playsInline
 							>
 								<source ref={videoSrcRef} type='video/mp4' />
 							</video>
+						</div>
+						<div
+							className={`w-full flex items-center justify-center ${
+								seconds <= 10
+									? 'text-red-300'
+									: seconds <= 20
+									? 'text-yellow-200'
+									: 'text-white'
+							}`}
+							style={{
+								opacity: ['question', 'answer', 'feedback', 'reset'].includes(
+									phase
+								)
+									? 1
+									: 0
+							}}
+							ref={textTimerRef}
+						>
+							<svg
+								className='fill-current w-6 h-6'
+								xmlns='http://www.w3.org/2000/svg'
+								viewBox='-4 -2 24 24'
+								width='24'
+								fill='currentColor'
+							>
+								<path d='M9 11h2a1 1 0 0 1 0 2H8a.997.997 0 0 1-1-1V8a1 1 0 1 1 2 0v3zM1.869 6.861a1.5 1.5 0 1 1 2.077-1.76 7.967 7.967 0 0 1 1.126-.548A2.5 2.5 0 0 1 6.5 0h3a2.5 2.5 0 0 1 1.428 4.553c.39.154.767.337 1.126.548a1.5 1.5 0 1 1 2.077 1.76 8 8 0 1 1-12.263 0zM8 18A6 6 0 1 0 8 6a6 6 0 0 0 0 12zM6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3z'></path>
+							</svg>
+							<p className='ml-1 mt-0.5 font-bold italic'>{seconds}</p>
 						</div>
 						{phase === 'question' && showScrollIcon && (
 							<div
@@ -507,7 +552,7 @@ const Home: NextPage = () => {
 						)}
 						<div
 							className='overflow-y-auto p-2 flex flex-col items-center relative'
-							style={{ minHeight: 75, width: videoWidth }}
+							style={{ minHeight: 100, width: videoWidth }}
 							ref={buttonBoxRef}
 						>
 							{[
