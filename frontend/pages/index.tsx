@@ -1,5 +1,4 @@
 import type { NextPage } from 'next';
-import enableInlineVideo from 'iphone-inline-video';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Meta from '../components/Meta';
@@ -12,6 +11,7 @@ import {
 import mainTitle from '../public/assets/images/main_title.png';
 import chestImage from '../public/assets/images/chest.png';
 import chestGlow from '../public/assets/images/chest_glow.png';
+import { useIphoneInlineVideo } from '../hooks/useIphoneInlineVideo';
 
 interface Bubble {
 	width: number;
@@ -22,6 +22,7 @@ interface Bubble {
 }
 
 const Home: NextPage = () => {
+	const makeInline = useIphoneInlineVideo();
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
 	const noSleepVideoRef = useRef<HTMLVideoElement>(null);
@@ -135,11 +136,11 @@ const Home: NextPage = () => {
 					: process.env.NEXT_PUBLIC_BASE_URL_DEV
 			}/api/videos/${trivia?._id}`;
 			videoRef.current?.load();
-			enableInlineVideo(videoRef.current);
-			enableInlineVideo(countdownVideoRef.current);
+			makeInline(videoRef.current);
+			makeInline(countdownVideoRef.current);
 			dispatch(clearTriviaTrigger());
 		}
-	}, [triviaTrigger, dispatch, trivia?._id]);
+	}, [triviaTrigger, dispatch, trivia?._id, makeInline]);
 
 	useEffect(() => {
 		if (
