@@ -104,3 +104,12 @@
 		transform: rotateZ(15deg) rotateY(1440deg) translate(10vw, 110vh);
 	}
 }
+
+@keyframes loading {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
