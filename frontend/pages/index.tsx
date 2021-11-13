@@ -11,7 +11,7 @@ import {
 import mainTitle from '../public/assets/images/main_title.png';
 import chestImage from '../public/assets/images/chest.png';
 import chestGlow from '../public/assets/images/chest_glow.png';
-import { useIphoneInlineVideo } from '../hooks/useIphoneInlineVideo';
+import useIphoneInlineVideo from '../hooks/useIphoneInlineVideo';
 
 interface Bubble {
 	width: number;
@@ -22,7 +22,7 @@ interface Bubble {
 }
 
 const Home: NextPage = () => {
-	const makeInline = useIphoneInlineVideo();
+	useIphoneInlineVideo();
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
@@ -140,11 +140,9 @@ const Home: NextPage = () => {
 					: process.env.NEXT_PUBLIC_BASE_URL_DEV
 			}/api/videos/${trivia?._id}`;
 			videoRef.current?.load();
-			makeInline(videoRef.current);
-			makeInline(countdownVideoRef.current);
 			dispatch(clearTriviaTrigger());
 		}
-	}, [triviaTrigger, dispatch, trivia?._id, makeInline]);
+	}, [triviaTrigger, dispatch, trivia?._id]);
 
 	useEffect(() => {
 		const vidRef = videoRef.current;
@@ -207,6 +205,7 @@ const Home: NextPage = () => {
 				autoPlay
 				loop
 				controls={false}
+				id='screen-active-video'
 			>
 				<source src='/assets/video/countdown.mp4' type='video/mp4' />
 			</video>
@@ -323,7 +322,8 @@ const Home: NextPage = () => {
 								className={`h-12 border border-brown-dark italic text-white text-2xl font-bold bg-green-light`}
 								style={{
 									borderRadius: 25,
-									minHeight: 50
+									minHeight: 50,
+									backfaceVisibility: 'hidden'
 								}}
 							>
 								OK
@@ -458,6 +458,7 @@ const Home: NextPage = () => {
 											ref={countdownVideoRef}
 											controls={false}
 											autoPlay={false}
+											id='countdown-video'
 										>
 											<source
 												src='/assets/video/countdown.mp4'
@@ -481,6 +482,7 @@ const Home: NextPage = () => {
 								}
 								autoPlay={false}
 								playsInline
+								id='question-video'
 							>
 								<source ref={videoSrcRef} type='video/mp4' />
 							</video>
@@ -562,7 +564,7 @@ const Home: NextPage = () => {
 									style={{
 										borderRadius: 25,
 										padding: '11px 8px',
-										// minHeight: 50,
+										backfaceVisibility: 'hidden',
 										transition:
 											phase === 'answer' && selectedAnswer !== item.key
 												? 'opacity .5s ease 1.5s'
