@@ -47,6 +47,7 @@ const Home: NextPage = () => {
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
 	const [playSound, setPlaySound] = useState<boolean>(false);
+	const [videoLoadLoopNumber, setVideoLoadLoopNumber] = useState<number>(0);
 	const waterColor = '#228ABF';
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
@@ -186,6 +187,13 @@ const Home: NextPage = () => {
 					setMediaIsReady(true);
 				if (mediaIsReady) {
 					clearInterval(timer);
+				}
+				if (videoLoadLoopNumber >= 10) {
+					clearInterval(timer);
+					setMediaIsReady(true);
+					setVideoLoadLoopNumber(0);
+				} else {
+					setVideoLoadLoopNumber(prev => prev + 1);
 				}
 			}, 500);
 		} else {
@@ -447,6 +455,14 @@ const Home: NextPage = () => {
 								width: videoWidth
 							}}
 						>
+							<div
+								className='absolute top-0 left-0 right-0 bottom-0 z-30 cursor-pointer'
+								onClick={() =>
+									videoRef.current?.paused
+										? videoRef.current?.play()
+										: videoRef.current?.pause()
+								}
+							></div>
 							{['countdown', 'standby'].includes(phase) && (
 								<div className='absolute top-0 left-1/2 transform -translate-x-1/2 bottom-0 right-0 z-10 w-full p-2'>
 									<div className='bg-black flex items-center rounded-lg w-full h-full'>
@@ -475,11 +491,6 @@ const Home: NextPage = () => {
 								loop
 								controls={false}
 								preload='auto'
-								onClick={() =>
-									videoRef.current?.paused
-										? videoRef.current?.play()
-										: videoRef.current?.pause()
-								}
 								autoPlay={false}
 								playsInline
 								id='question-video'
