@@ -14,7 +14,6 @@ const useIphoneInlineVideo = () => {
 			enableInlineVideo(questionVideo);
 			enableInlineVideo(countdownVideo);
 			setIsInline(true);
-			console.log('done');
 			screenActiveVideo.play();
 		}
 	}, [mounted]);
