@@ -12,8 +12,8 @@ class MyDocument extends Document {
 				<body
 					className='bg-brown-lightest flex flex-col justify-center items-center'
 					style={{
-						backgroundImage: `url('/assets/images/bg_wood.png')`,
-						backgroundRepeat: 'repeat-x',
+						backgroundImage: `url('/assets/images/background.png')`,
+						backgroundRepeat: 'repeat',
 						backgroundPosition: 'top'
 					}}
 				>

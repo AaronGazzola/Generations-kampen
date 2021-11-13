@@ -25,7 +25,6 @@ const Home: NextPage = () => {
 	const makeInline = useIphoneInlineVideo();
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
-	const noSleepVideoRef = useRef<HTMLVideoElement>(null);
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoSrcRef = useRef<HTMLSourceElement>(null);
@@ -44,7 +43,7 @@ const Home: NextPage = () => {
 	const [bubbles, setBubbles] = useState<Bubble[]>([]);
 	const [gotTrivia, setGotTrivia] = useState<boolean>(false);
 	const [mediaIsReady, setMediaIsReady] = useState<boolean>(false);
-	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(true);
+	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(false);
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
 	const [playSound, setPlaySound] = useState<boolean>(false);
@@ -82,8 +81,8 @@ const Home: NextPage = () => {
 			if (audioSrcRef.current)
 				audioSrcRef.current.src =
 					answer === trivia?.correctAnswer
-						? '/assets/audio/applause.mp3'
-						: '/assets/audio/trombone.mp3';
+						? '/assets/audio/win.mp3'
+						: '/assets/audio/lose.mp3';
 			audioRef.current?.load();
 			setTimeout(() => {
 				setPlaySound(true);
@@ -97,12 +96,12 @@ const Home: NextPage = () => {
 		timer = setInterval(() => {
 			if (phase === 'answer') setSeconds(0);
 			if (seconds) {
-				setSeconds(prev => (prev = prev - 1));
+				setSeconds(prev => prev - 1);
 				if (seconds === 3) countdownVideoRef.current?.play();
 			} else if (phase === 'countdown') {
 				setPhase('question');
 				setSeconds(60);
-				videoRef?.current?.play();
+				videoRef.current?.play();
 			} else if (phase === 'question') {
 				if (!selectedAnswer) answerHandler('');
 			}
@@ -113,7 +112,7 @@ const Home: NextPage = () => {
 	const feedbackHandler = (feedback: 'positive' | 'negative') => {
 		if (trivia) dispatch(submitFeedback({ feedback, id: trivia._id || '' }));
 		setPhase('reset');
-		setShowScrollIcon(true);
+		setShowScrollIcon(false);
 		setSelectedAnswer('');
 		setGotTrivia(false);
 		setTimeout(() => {
@@ -145,13 +144,22 @@ const Home: NextPage = () => {
 	useEffect(() => {
 		if (
 			phase === 'question' &&
-			((buttonBoxRef.current?.scrollTop &&
-				buttonBoxRef.current?.scrollTop > 0) ||
-				buttonBoxRef.current?.offsetHeight ===
-					buttonBoxRef.current?.scrollHeight)
-		)
-			setShowScrollIcon(false);
+			buttonBoxRef.current &&
+			buttonBoxRef.current.scrollHeight > buttonBoxRef.current.offsetHeight
+		) {
+			setShowScrollIcon(true);
+		}
 	}, [buttonBoxRef.current?.scrollTop, phase]);
+
+	useEffect(() => {
+		let timer: NodeJS.Timer;
+		if (showScrollIcon) {
+			timer = setInterval(() => {
+				setShowScrollIcon(false);
+			}, 3000);
+		}
+		return () => clearInterval(timer);
+	}, [showScrollIcon]);
 
 	useEffect(() => {
 		const vidRef = videoRef.current;
@@ -185,18 +193,6 @@ const Home: NextPage = () => {
 	}, [playSound, audioRef]);
 
 	useEffect(() => {
-		const touchHandler = () => {
-			if (phase === 'standby') noSleepVideoRef.current?.play();
-		};
-		document.addEventListener('touchstart', touchHandler);
-		return document.removeEventListener('touchstart', touchHandler);
-	}, [phase]);
-
-	useEffect(() => {
-		if (phase !== 'standby') noSleepVideoRef.current?.pause();
-	}, [phase]);
-
-	useEffect(() => {
 		let timer: NodeJS.Timer;
 		if (phase === 'standby') {
 			timer = setInterval(() => {
@@ -223,7 +219,6 @@ const Home: NextPage = () => {
 				className='fixed bottom-0 left-0'
 				style={{ width: 1, height: 1, opacity: 0.01 }}
 				muted
-				ref={noSleepVideoRef}
 				autoPlay
 				loop
 				controls={false}
@@ -285,7 +280,7 @@ const Home: NextPage = () => {
 											height: 40
 										}}
 									>
-										D&Aring;lig
+										D&aring;lig
 									</button>
 								</div>
 							</div>
@@ -531,7 +526,9 @@ const Home: NextPage = () => {
 							>
 								<path d='M9 11h2a1 1 0 0 1 0 2H8a.997.997 0 0 1-1-1V8a1 1 0 1 1 2 0v3zM1.869 6.861a1.5 1.5 0 1 1 2.077-1.76 7.967 7.967 0 0 1 1.126-.548A2.5 2.5 0 0 1 6.5 0h3a2.5 2.5 0 0 1 1.428 4.553c.39.154.767.337 1.126.548a1.5 1.5 0 1 1 2.077 1.76 8 8 0 1 1-12.263 0zM8 18A6 6 0 1 0 8 6a6 6 0 0 0 0 12zM6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3z'></path>
 							</svg>
-							<p className='ml-1 mt-0.5 font-bold italic'>{seconds}</p>
+							<p className='ml-1 mt-0.5 font-bold italic'>
+								{seconds < 0 ? 0 : seconds}
+							</p>
 						</div>
 						{phase === 'question' && showScrollIcon && (
 							<div
