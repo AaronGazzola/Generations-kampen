@@ -70,6 +70,11 @@ const Home: NextPage = () => {
 		setPhase('countdown');
 		setSeconds(5);
 		setBubbles(getBubbles(30));
+		setShowScrollIcon(
+			buttonBoxRef.current
+				? buttonBoxRef.current.scrollHeight > buttonBoxRef.current.offsetHeight
+				: false
+		);
 	};
 
 	const answerHandler = useCallback(
@@ -140,26 +145,6 @@ const Home: NextPage = () => {
 			dispatch(clearTriviaTrigger());
 		}
 	}, [triviaTrigger, dispatch, trivia?._id, makeInline]);
-
-	useEffect(() => {
-		if (
-			phase === 'question' &&
-			buttonBoxRef.current &&
-			buttonBoxRef.current.scrollHeight > buttonBoxRef.current.offsetHeight
-		) {
-			setShowScrollIcon(true);
-		}
-	}, [buttonBoxRef.current?.scrollTop, phase]);
-
-	useEffect(() => {
-		let timer: NodeJS.Timer;
-		if (showScrollIcon) {
-			timer = setInterval(() => {
-				setShowScrollIcon(false);
-			}, 3000);
-		}
-		return () => clearInterval(timer);
-	}, [showScrollIcon]);
 
 	useEffect(() => {
 		const vidRef = videoRef.current;
@@ -536,7 +521,7 @@ const Home: NextPage = () => {
 								style={{ width: videoWidth, height: 0 }}
 							>
 								<svg
-									className='absolute right-10 top-1/2 transform -translate-y-1/2 fill-current text-gray-800 rounded-full border bg-white opacity-40'
+									className='absolute right-3 top-1/2 transform -translate-y-1/2 fill-current text-gray-800 rounded-full border bg-white opacity-40'
 									style={{
 										animation: 'scroll-icon 1s ease-in-out infinite alternate'
 									}}
@@ -552,6 +537,7 @@ const Home: NextPage = () => {
 							className='overflow-y-auto p-2 flex flex-col items-center relative'
 							style={{ minHeight: 100, width: videoWidth }}
 							ref={buttonBoxRef}
+							onScroll={() => setShowScrollIcon(false)}
 						>
 							{[
 								{ key: 'a', color: 'bg-blue' },
