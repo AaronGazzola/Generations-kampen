@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Link from 'next/link';
 
-const index = () => {
+const Index = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
@@ -91,7 +91,11 @@ const index = () => {
 				style={{ fontFamily: "'Londrina Solid', sans-serif" }}
 			>
 				<div className='w-full -mt-3 sm:-mt-5'>
-					<Image src={image1} layout='responsive' />
+					<Image
+						alt='people playing the generations kampen board game'
+						src={image1}
+						layout='responsive'
+					/>
 				</div>
 				<p
 					className='text-3xl text-white mt-4 mb-6'
@@ -101,8 +105,16 @@ const index = () => {
 					frågor från fyra generationer och ta dig i mål först för att vinna. Du
 					får svara på frågor om musik, film, populärkultur och nyheter.
 				</p>
-				<Image src={image2} layout='responsive' />
-				<Image src={image3} layout='responsive' />
+				<Image
+					alt='generations kampen rules 1'
+					src={image2}
+					layout='responsive'
+				/>
+				<Image
+					alt='generations kampen rules 2'
+					src={image3}
+					layout='responsive'
+				/>
 				<h1
 					className='text-6xl text-white mt-4 text-center'
 					style={{ textShadow: '2px 2px 2px black' }}
@@ -149,4 +161,4 @@ const index = () => {
 	);
 };
 
-export default index;
+export default Index;

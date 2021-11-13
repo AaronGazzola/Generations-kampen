@@ -200,7 +200,7 @@ const Home: NextPage = () => {
 			setMediaIsReady(false);
 		}
 		return () => clearInterval(timer);
-	}, [phase, mediaIsReady]);
+	}, [phase, mediaIsReady, videoLoadLoopNumber]);
 
 	return (
 		<>
