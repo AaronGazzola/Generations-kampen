@@ -46,7 +46,6 @@ const Home: NextPage = () => {
 	const [showScrollIcon, setShowScrollIcon] = useState<boolean>(false);
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
-	const [playSound, setPlaySound] = useState<boolean>(false);
 	const [videoLoadLoopNumber, setVideoLoadLoopNumber] = useState<number>(0);
 	const waterColor = '#228ABF';
 	const getBubbles = (density: number) => {
@@ -76,6 +75,13 @@ const Home: NextPage = () => {
 				? buttonBoxRef.current.scrollHeight > buttonBoxRef.current.offsetHeight
 				: false
 		);
+		setTimeout(() => {
+			countdownVideoRef.current?.play();
+		}, 3000);
+
+		setTimeout(() => {
+			videoRef.current?.play();
+		}, 6000);
 	};
 
 	const answerHandler = useCallback(
@@ -91,7 +97,7 @@ const Home: NextPage = () => {
 						: '/assets/audio/lose.mp3';
 			audioRef.current?.load();
 			setTimeout(() => {
-				setPlaySound(true);
+				audioRef.current?.play();
 			}, 3000);
 		},
 		[phase, trivia?.correctAnswer]
@@ -103,11 +109,9 @@ const Home: NextPage = () => {
 			if (phase === 'answer') setSeconds(0);
 			if (seconds) {
 				setSeconds(prev => prev - 1);
-				if (seconds === 3) countdownVideoRef.current?.play();
 			} else if (phase === 'countdown') {
 				setPhase('question');
 				setSeconds(60);
-				videoRef.current?.play();
 			} else if (phase === 'question') {
 				if (!selectedAnswer) answerHandler('');
 			}
@@ -168,13 +172,6 @@ const Home: NextPage = () => {
 		return () =>
 			vidRef?.removeEventListener('loadedmetadata', videoMetaDataHandler);
 	}, [screenHeight]);
-
-	useEffect(() => {
-		if (playSound) {
-			audioRef.current?.play();
-			setPlaySound(false);
-		}
-	}, [playSound, audioRef]);
 
 	useEffect(() => {
 		let timer: NodeJS.Timer;
