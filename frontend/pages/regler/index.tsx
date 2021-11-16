@@ -58,33 +58,43 @@ const Index = () => {
 					}
 				}}
 			>
-				<MenuItem
-					style={{
-						fontFamily: "'Londrina Solid', sans-serif",
-						color: '#fff'
-					}}
-					onClick={handleClose}
+				<Link href='/'>
+					<MenuItem
+						style={{
+							fontFamily: "'Londrina Solid', sans-serif",
+							color: '#fff'
+						}}
+						onClick={handleClose}
+					>
+						Utmaningen
+					</MenuItem>
+				</Link>
+				<Link href='/about'>
+					<MenuItem
+						style={{
+							fontFamily: "'Londrina Solid', sans-serif",
+							color: '#fff'
+						}}
+						onClick={handleClose}
+					>
+						About
+					</MenuItem>
+				</Link>
+				<a
+					rel='noreferrer noopener'
+					target='_blank'
+					href='https://bellvivo.com/lek-spel/generationskampen-spelet'
 				>
-					<Link href='/'>Utmaningen</Link>
-				</MenuItem>
-				<MenuItem
-					style={{
-						fontFamily: "'Londrina Solid', sans-serif",
-						color: '#fff'
-					}}
-					onClick={handleClose}
-				>
-					About
-				</MenuItem>
-				<MenuItem
-					style={{
-						fontFamily: "'Londrina Solid', sans-serif",
-						color: '#fff'
-					}}
-					onClick={handleClose}
-				>
-					Buy
-				</MenuItem>
+					<MenuItem
+						style={{
+							fontFamily: "'Londrina Solid', sans-serif",
+							color: '#fff'
+						}}
+						onClick={handleClose}
+					>
+						Buy
+					</MenuItem>
+				</a>
 			</Menu>
 			<div
 				className='max-w-xl text-white px-6'
@@ -119,7 +129,7 @@ const Index = () => {
 					className='text-6xl text-white mt-4 text-center'
 					style={{ textShadow: '2px 2px 2px black' }}
 				>
-					Regler{' '}
+					Regler
 				</h1>
 				<p
 					className='text-3xl text-white my-4'
