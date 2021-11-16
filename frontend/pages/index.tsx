@@ -12,7 +12,6 @@ import mainTitle from '../public/assets/images/main_title.png';
 import chestImage from '../public/assets/images/chest.png';
 import chestGlow from '../public/assets/images/chest_glow.png';
 import useIphoneInlineVideo from '../hooks/useIphoneInlineVideo';
-import useRedirect from '../hooks/useRedirect';
 
 interface Bubble {
 	width: number;
@@ -24,7 +23,6 @@ interface Bubble {
 
 const Home: NextPage = () => {
 	useIphoneInlineVideo();
-	useRedirect();
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
