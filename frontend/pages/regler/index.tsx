@@ -58,7 +58,7 @@ const Index = () => {
 					}
 				}}
 			>
-				<Link href='/'>
+				<Link passHref href='/'>
 					<MenuItem
 						style={{
 							fontFamily: "'Londrina Solid', sans-serif",
@@ -69,7 +69,7 @@ const Index = () => {
 						Utmaningen
 					</MenuItem>
 				</Link>
-				<Link href='/about'>
+				<Link passHref href='/about'>
 					<MenuItem
 						style={{
 							fontFamily: "'Londrina Solid', sans-serif",
