@@ -22,7 +22,6 @@ interface Bubble {
 }
 
 const Home: NextPage = () => {
-	useIphoneInlineVideo();
 	const dispatch = useAppDispatch();
 	const questionRef = useRef<HTMLHeadingElement>(null);
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
@@ -47,6 +46,8 @@ const Home: NextPage = () => {
 	const [videoWidth, setVideoWidth] = useState<string>('320px');
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
 	const [videoLoadLoopNumber, setVideoLoadLoopNumber] = useState<number>(0);
+	const [firstVideoLoaded, setFirstVideoLoaded] = useState<boolean>(false);
+	const { isInline } = useIphoneInlineVideo(firstVideoLoaded);
 	const waterColor = '#228ABF';
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
@@ -66,7 +67,7 @@ const Home: NextPage = () => {
 	};
 
 	const playHandler = () => {
-		if (!mediaIsReady) return;
+		if (!mediaIsReady || !isInline) return;
 		setPhase('countdown');
 		setSeconds(5);
 		setBubbles(getBubbles(30));
@@ -96,9 +97,12 @@ const Home: NextPage = () => {
 						? '/assets/audio/win.mp3'
 						: '/assets/audio/lose.mp3';
 			audioRef.current?.load();
-			setTimeout(() => {
-				audioRef.current?.play();
-			}, 3000);
+			setTimeout(
+				() => {
+					audioRef.current?.play();
+				},
+				answer === trivia?.correctAnswer ? 1000 : 3000
+			);
 		},
 		[phase, trivia?.correctAnswer]
 	);
@@ -182,6 +186,7 @@ const Home: NextPage = () => {
 					countdownVideoRef.current?.readyState === 4
 				)
 					setMediaIsReady(true);
+				if (!firstVideoLoaded) setFirstVideoLoaded(true);
 				if (mediaIsReady) {
 					clearInterval(timer);
 				}
@@ -189,6 +194,7 @@ const Home: NextPage = () => {
 					clearInterval(timer);
 					setMediaIsReady(true);
 					setVideoLoadLoopNumber(0);
+					if (!firstVideoLoaded) setFirstVideoLoaded(true);
 				} else {
 					setVideoLoadLoopNumber(prev => prev + 1);
 				}
@@ -197,7 +203,7 @@ const Home: NextPage = () => {
 			setMediaIsReady(false);
 		}
 		return () => clearInterval(timer);
-	}, [phase, mediaIsReady, videoLoadLoopNumber]);
+	}, [phase, mediaIsReady, videoLoadLoopNumber, firstVideoLoaded]);
 
 	return (
 		<>
@@ -236,7 +242,11 @@ const Home: NextPage = () => {
 								}`}
 							>
 								{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-									<div key={num} className='confetti'></div>
+									<div
+										key={num}
+										style={{ backfaceVisibility: 'hidden' }}
+										className='confetti'
+									></div>
 								))}
 							</div>
 						)}
@@ -359,7 +369,7 @@ const Home: NextPage = () => {
 									fontFamily: "'Londrina Solid', sans-serif"
 								}}
 							>
-								{mediaIsReady || phase === 'countdown' ? (
+								{(mediaIsReady && isInline) || phase === 'countdown' ? (
 									'STARTA'
 								) : (
 									<svg
@@ -437,7 +447,7 @@ const Home: NextPage = () => {
 					>
 						<h1
 							ref={questionRef}
-							className='whitespace-nowrap text-white font-bold italic mt-2'
+							className='text-center text-white font-bold italic mt-2'
 							style={{
 								fontSize: '1.2rem',
 								opacity: ['standby', 'countdown'].includes(phase) ? 0 : 1
