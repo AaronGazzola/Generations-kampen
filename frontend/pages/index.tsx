@@ -179,14 +179,13 @@ const Home: NextPage = () => {
 
 	useEffect(() => {
 		let timer: NodeJS.Timer;
-		if (phase === 'standby') {
+		if (phase === 'standby' && !mediaIsReady) {
 			timer = setInterval(() => {
 				if (
 					videoRef.current?.readyState === 4 &&
 					countdownVideoRef.current?.readyState === 4
 				)
 					setMediaIsReady(true);
-				if (!firstVideoLoaded) setFirstVideoLoaded(true);
 				if (mediaIsReady) {
 					clearInterval(timer);
 				}
@@ -194,16 +193,19 @@ const Home: NextPage = () => {
 					clearInterval(timer);
 					setMediaIsReady(true);
 					setVideoLoadLoopNumber(0);
-					if (!firstVideoLoaded) setFirstVideoLoaded(true);
 				} else {
 					setVideoLoadLoopNumber(prev => prev + 1);
 				}
 			}, 500);
-		} else {
+		} else if (phase !== 'standby' && mediaIsReady) {
 			setMediaIsReady(false);
 		}
 		return () => clearInterval(timer);
-	}, [phase, mediaIsReady, videoLoadLoopNumber, firstVideoLoaded]);
+	}, [phase, mediaIsReady, videoLoadLoopNumber]);
+
+	useEffect(() => {
+		if (mediaIsReady && !firstVideoLoaded) setFirstVideoLoaded(true);
+	}, [mediaIsReady, firstVideoLoaded]);
 
 	return (
 		<>
