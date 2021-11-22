@@ -47,8 +47,11 @@ const Home: NextPage = () => {
 	const [selectedAnswer, setSelectedAnswer] = useState<string>('');
 	const [videoLoadLoopNumber, setVideoLoadLoopNumber] = useState<number>(0);
 	const [firstVideoLoaded, setFirstVideoLoaded] = useState<boolean>(false);
+	const [videoMetaDataLoaded, setVideoMetaDataLoaded] =
+		useState<boolean>(false);
 	const { isInline } = useIphoneInlineVideo(firstVideoLoaded);
 	const waterColor = '#228ABF';
+	const minButtonBoxHeight = 208;
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
 		const getRandomInteger = (min: number, max: number) => {
@@ -154,28 +157,40 @@ const Home: NextPage = () => {
 	}, [triviaTrigger, dispatch, trivia?._id]);
 
 	useEffect(() => {
+		if (
+			buttonBoxRef.current &&
+			videoRef.current &&
+			questionRef.current &&
+			textTimerRef.current &&
+			videoMetaDataLoaded
+		) {
+			setVideoWidth(
+				`clamp(280px, 100%, ${
+					((screenHeight -
+						questionRef.current.offsetHeight -
+						16 -
+						textTimerRef.current.offsetHeight -
+						buttonBoxRef.current.scrollHeight) *
+						videoRef.current.videoWidth) /
+					videoRef.current.videoHeight
+				}px`
+			);
+		} else if (phase === 'answer' && videoMetaDataLoaded) {
+			setVideoMetaDataLoaded(false);
+		}
+	}, [phase, screenHeight]);
+
+	useEffect(() => {
 		const vidRef = videoRef.current;
 		const videoMetaDataHandler = () => {
-			if (
-				buttonBoxRef.current &&
-				vidRef &&
-				questionRef.current &&
-				textTimerRef.current
-			)
-				setVideoWidth(
-					`clamp(280px, 100%, calc(((var(--vh) * 100) - ${
-						questionRef.current.offsetHeight - textTimerRef.current.offsetHeight
-					}px - ${
-						screenHeight > 580 ? buttonBoxRef.current?.scrollHeight + 16 : 178
-					}px)) * ${vidRef?.videoWidth / vidRef?.videoHeight})`
-				);
+			setVideoMetaDataLoaded(true);
 		};
 		if (vidRef) {
 			vidRef.addEventListener('loadedmetadata', videoMetaDataHandler);
 		}
 		return () =>
 			vidRef?.removeEventListener('loadedmetadata', videoMetaDataHandler);
-	}, [screenHeight]);
+	}, []);
 
 	useEffect(() => {
 		let timer: NodeJS.Timer;
