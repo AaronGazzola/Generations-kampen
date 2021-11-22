@@ -178,7 +178,7 @@ const Home: NextPage = () => {
 		} else if (phase === 'answer' && videoMetaDataLoaded) {
 			setVideoMetaDataLoaded(false);
 		}
-	}, [phase, screenHeight]);
+	}, [phase, screenHeight, videoMetaDataLoaded]);
 
 	useEffect(() => {
 		const vidRef = videoRef.current;
