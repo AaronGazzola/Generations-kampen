@@ -27,6 +27,7 @@ const Home: NextPage = () => {
 	const countdownVideoRef = useRef<HTMLVideoElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoSrcRef = useRef<HTMLSourceElement>(null);
+	const screenActiveVideoRef = useRef<HTMLVideoElement>(null);
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const audioSrcRef = useRef<HTMLSourceElement>(null);
 	const buttonBoxRef = useRef<HTMLDivElement>(null);
@@ -49,9 +50,9 @@ const Home: NextPage = () => {
 	const [firstVideoLoaded, setFirstVideoLoaded] = useState<boolean>(false);
 	const [videoMetaDataLoaded, setVideoMetaDataLoaded] =
 		useState<boolean>(false);
+	const [hideCountdown, setHideCountdown] = useState<boolean>(false);
 	const { isInline } = useIphoneInlineVideo(firstVideoLoaded);
 	const waterColor = '#228ABF';
-	const minButtonBoxHeight = 208;
 	const getBubbles = (density: number) => {
 		let arr: Bubble[] = [];
 		const getRandomInteger = (min: number, max: number) => {
@@ -79,7 +80,13 @@ const Home: NextPage = () => {
 				? buttonBoxRef.current.scrollHeight > buttonBoxRef.current.offsetHeight
 				: false
 		);
+		videoRef.current?.play();
+		videoRef.current?.pause();
+		countdownVideoRef.current?.play();
+		countdownVideoRef.current?.pause();
+		setHideCountdown(true);
 		setTimeout(() => {
+			setHideCountdown(false);
 			countdownVideoRef.current?.play();
 		}, 3000);
 
@@ -219,7 +226,10 @@ const Home: NextPage = () => {
 	}, [phase, mediaIsReady, videoLoadLoopNumber]);
 
 	useEffect(() => {
-		if (mediaIsReady && !firstVideoLoaded) setFirstVideoLoaded(true);
+		if (mediaIsReady && !firstVideoLoaded) {
+			setFirstVideoLoaded(true);
+			screenActiveVideoRef.current?.play();
+		}
 	}, [mediaIsReady, firstVideoLoaded]);
 
 	return (
@@ -228,11 +238,12 @@ const Home: NextPage = () => {
 			<video
 				playsInline
 				className='fixed bottom-0 left-0'
-				style={{ width: 1, height: 1, opacity: 0.01 }}
+				style={{ width: 1, height: 1, opacity: 1 }}
 				muted
 				autoPlay
 				loop
 				controls={false}
+				ref={screenActiveVideoRef}
 				id='screen-active-video'
 			>
 				<source src='/assets/video/countdown.mp4' type='video/mp4' />
@@ -248,7 +259,8 @@ const Home: NextPage = () => {
 							phase === 'reset'
 								? 'fade-out .5s ease-in-out forwards'
 								: 'fade-in .5s ease-in-out 3s forwards',
-						backgroundColor: 'rgba(0,0,0,0.7)'
+						backgroundColor: 'rgba(0,0,0,0.7)',
+						backfaceVisibility: 'hidden'
 					}}
 				>
 					{selectedAnswer === trivia?.correctAnswer &&
@@ -257,6 +269,7 @@ const Home: NextPage = () => {
 								className={`absolute top-0 left-0 right-0 bottom-0 transition-opacity ease-in-out duration-300 ${
 									phase === 'feedback' ? 'opacity-0' : ''
 								}`}
+								style={{ backfaceVisibility: 'hidden' }}
 							>
 								{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
 									<div
@@ -492,7 +505,7 @@ const Home: NextPage = () => {
 									<div className='bg-black flex items-center rounded-lg w-full h-full'>
 										<video
 											className={`w-full transition-opacity ease-in-out duration-300 ${
-												phase === 'countdown' && seconds > 4 ? 'opacity-0' : ''
+												hideCountdown ? 'opacity-0' : ''
 											}`}
 											playsInline
 											ref={countdownVideoRef}
